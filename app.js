@@ -1,6 +1,6 @@
 // Reemplazá con tus datos reales del proyecto nuevo de Supabase
-const SUPABASE_URL = "TU_SUPABASE_URL";
-const SUPABASE_KEY = "TU_SUPABASE_ANON_KEY";
+const SUPABASE_URL = "https://zpyhryenaaiewbjzjmfg.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpweWhyeWVuYWFpZXdianpqbWZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjgyNTIsImV4cCI6MjA5NjgwNDI1Mn0.hzHO4eRH7xH_O1zo6_lBs9kbsImBNLnDxL23okgK9_g";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const NUMERO_WSP = "549221XXXXXXX"; // Poné el número de tu tío con código de área (sin el + ni el 15)

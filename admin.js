@@ -1,12 +1,33 @@
-const SUPABASE_URL = "TU_SUPABASE_URL";
-const SUPABASE_KEY = "TU_SUPABASE_ANON_KEY";
-if (!window.supabase) {
-    alert("No se pudo cargar Supabase. Revisa la conexion a internet o el CDN en admin.html.");
-}
-const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL = "https://zpyhryenaaiewbjzjmfg.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpweWhyeWVuYWFpZXdianpqbWZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjgyNTIsImV4cCI6MjA5NjgwNDI1Mn0.hzHO4eRH7xH_O1zo6_lBs9kbsImBNLnDxL23okgK9_g";
+let supabaseClient = null;
 
 const form = document.getElementById('form-panel');
 const PESO_MAXIMO_IMAGEN = 100 * 1024; // 100KB
+
+function mostrarEstado(mensaje) {
+    const btn = document.getElementById('btn-publicar');
+    if (btn) btn.innerText = mensaje;
+}
+
+function obtenerSupabaseClient() {
+    if (!window.supabase) {
+        throw new Error("No se pudo cargar Supabase. Revisa tu conexion a internet.");
+    }
+
+    if (
+        SUPABASE_URL === "TU_SUPABASE_URL" ||
+        SUPABASE_KEY === "TU_SUPABASE_ANON_KEY"
+    ) {
+        throw new Error("Faltan configurar SUPABASE_URL y SUPABASE_ANON_KEY en admin.js.");
+    }
+
+    if (!supabaseClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    }
+
+    return supabaseClient;
+}
 
 function blobDesdeCanvas(canvas, calidad) {
     return new Promise((resolve) => {
@@ -63,7 +84,7 @@ form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const btn = document.getElementById('btn-publicar');
-    btn.innerText = "Preparando publicacion...";
+    mostrarEstado("Preparando publicacion...");
     btn.disabled = true;
 
     const nombre = document.getElementById('nombre').value;
@@ -73,11 +94,13 @@ form.addEventListener('submit', async (e) => {
     const fotoArchivo = document.getElementById('foto').files[0];
 
     try {
+        const supabase = obtenerSupabaseClient();
+
         if (!fotoArchivo) {
             throw new Error("Selecciona una foto antes de publicar.");
         }
 
-        btn.innerText = "Comprimiendo foto...";
+        mostrarEstado("Comprimiendo foto...");
         const fotoComprimida = await comprimirImagen(fotoArchivo);
 
         if (!fotoComprimida) {
@@ -91,8 +114,8 @@ form.addEventListener('submit', async (e) => {
             .replace(/[^a-zA-Z0-9-_]/g, '');
         const nombreImagen = `${Date.now()}-${nombreBase || 'producto'}.jpg`;
 
-        btn.innerText = "Subiendo ropa...";
-        const { error: uploadError } = await supabaseClient.storage
+        mostrarEstado("Subiendo ropa...");
+        const { error: uploadError } = await supabase.storage
             .from('fotos-ropa')
             .upload(nombreImagen, fotoComprimida, {
                 contentType: 'image/jpeg',
@@ -101,13 +124,14 @@ form.addEventListener('submit', async (e) => {
 
         if (uploadError) throw uploadError;
 
-        const { data: urlData } = supabaseClient.storage
+        const { data: urlData } = supabase.storage
             .from('fotos-ropa')
             .getPublicUrl(nombreImagen);
 
         const urlFinalImagen = urlData.publicUrl;
 
-        const { error: dbError } = await supabaseClient
+        mostrarEstado("Guardando producto...");
+        const { error: dbError } = await supabase
             .from('productos')
             .insert([
                 {
@@ -128,7 +152,7 @@ form.addEventListener('submit', async (e) => {
         console.error(err);
         alert("Ocurrio un error: " + err.message);
     } finally {
-        btn.innerText = "PUBLICAR EN LA WEB";
+        mostrarEstado("PUBLICAR EN LA WEB");
         btn.disabled = false;
     }
 });
