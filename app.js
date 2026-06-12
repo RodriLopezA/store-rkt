@@ -148,7 +148,10 @@ function crearCarritoUI() {
                 </label>
 
                 <div class="cart-total">
-                    <span>Total</span>
+                    <div>
+                        <span>Total prendas</span>
+                        <small id="cart-total-note">No incluye envio</small>
+                    </div>
                     <strong id="cart-total">$0</strong>
                 </div>
 

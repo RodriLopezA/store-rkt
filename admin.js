@@ -8,11 +8,14 @@ const loginAdmin = document.getElementById('login-admin');
 const panelAdmin = document.getElementById('panel-admin');
 const form = document.getElementById('form-panel');
 const productosAdmin = document.getElementById('admin-productos');
+const inputFotos = document.getElementById('foto');
+const previewFotos = document.getElementById('preview-fotos');
 
 const PESO_MAXIMO_IMAGEN = 100 * 1024;
 const ANCHO_MAXIMO_IMAGEN = 800;
 const CALIDAD_INICIAL_IMAGEN = 0.7;
 const MAX_FOTOS_PRODUCTO = 3;
+let fotosSeleccionadas = [];
 
 function mostrarEstado(mensaje) {
     const btn = document.getElementById('btn-publicar');
@@ -157,6 +160,62 @@ function renderizarMetricas(productos) {
     document.getElementById('metrica-remeras-lista').innerText = remerasRecientes.length
         ? remerasRecientes.map((prod) => prod.nombre).join(', ')
         : 'Sin remeras recientes';
+}
+
+function sincronizarInputFotos() {
+    if (typeof DataTransfer === 'undefined') return;
+
+    const dataTransfer = new DataTransfer();
+    fotosSeleccionadas.forEach((foto) => dataTransfer.items.add(foto));
+    inputFotos.files = dataTransfer.files;
+}
+
+function renderizarPreviewFotos() {
+    if (!previewFotos) return;
+
+    if (!fotosSeleccionadas.length) {
+        previewFotos.innerHTML = '';
+        return;
+    }
+
+    previewFotos.innerHTML = fotosSeleccionadas.map((foto, index) => `
+        <article class="preview-foto">
+            <img src="${URL.createObjectURL(foto)}" alt="Foto seleccionada ${index + 1}">
+            <button type="button" data-index="${index}" aria-label="Quitar foto">×</button>
+            <span>${index + 1}</span>
+        </article>
+    `).join('');
+}
+
+function limpiarPreviewFotos() {
+    fotosSeleccionadas = [];
+    if (inputFotos) inputFotos.value = '';
+    renderizarPreviewFotos();
+}
+
+function configurarPreviewFotos() {
+    if (!inputFotos || !previewFotos) return;
+
+    inputFotos.addEventListener('change', () => {
+        const nuevasFotos = Array.from(inputFotos.files || []);
+        fotosSeleccionadas = [...fotosSeleccionadas, ...nuevasFotos].slice(0, MAX_FOTOS_PRODUCTO);
+        sincronizarInputFotos();
+        renderizarPreviewFotos();
+
+        if (nuevasFotos.length && fotosSeleccionadas.length === MAX_FOTOS_PRODUCTO) {
+            mostrarEstado("Maximo 3 fotos por producto");
+            setTimeout(() => mostrarEstado("PUBLICAR EN LA WEB"), 1200);
+        }
+    });
+
+    previewFotos.addEventListener('click', (event) => {
+        const boton = event.target.closest('button');
+        if (!boton) return;
+
+        fotosSeleccionadas.splice(Number(boton.dataset.index), 1);
+        sincronizarInputFotos();
+        renderizarPreviewFotos();
+    });
 }
 
 async function cargarProductosAdmin() {
@@ -320,7 +379,9 @@ form.addEventListener('submit', async (e) => {
     const categoria = document.getElementById('categoria').value;
     const talles = document.getElementById('talles').value;
     const colores = document.getElementById('colores').value;
-    const fotosArchivos = Array.from(document.getElementById('foto').files);
+    const fotosArchivos = fotosSeleccionadas.length
+        ? fotosSeleccionadas
+        : Array.from(inputFotos.files);
 
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();
@@ -339,11 +400,11 @@ form.addEventListener('submit', async (e) => {
         const urlsFotos = [];
 
         for (const [index, fotoArchivo] of fotosArchivos.entries()) {
-            mostrarEstado(`Comprimiendo foto ${index + 1}/${fotosArchivos.length}...`);
+            mostrarEstado(`Preparando fotos ${index + 1}/${fotosArchivos.length}...`);
             const fotoComprimida = await comprimirImagen(fotoArchivo);
 
             if (!fotoComprimida) {
-                throw new Error(`No se pudo comprimir la foto ${index + 1} por debajo de 100KB. Proba con otra foto.`);
+                throw new Error(`No se pudo preparar la foto ${index + 1}. Proba sacarla de nuevo con buena luz.`);
             }
 
             const nombreBase = fotoArchivo.name
@@ -352,7 +413,7 @@ form.addEventListener('submit', async (e) => {
                 .replace(/[^a-zA-Z0-9-_]/g, '');
             const nombreImagen = `${Date.now()}-${index + 1}-${nombreBase || 'producto'}.${fotoComprimida.extension}`;
 
-            mostrarEstado(`Subiendo foto ${index + 1}/${fotosArchivos.length}...`);
+            mostrarEstado(`Subiendo fotos ${index + 1}/${fotosArchivos.length}...`);
             const { error: uploadError } = await supabaseClient.storage
                 .from(BUCKET_FOTOS)
                 .upload(nombreImagen, fotoComprimida.blob, {
@@ -389,6 +450,7 @@ form.addEventListener('submit', async (e) => {
 
         alert("Prenda publicada con exito.");
         form.reset();
+        limpiarPreviewFotos();
         await cargarProductosAdmin();
 
     } catch (err) {
@@ -400,4 +462,5 @@ form.addEventListener('submit', async (e) => {
     }
 });
 
+configurarPreviewFotos();
 verificarSesion();
