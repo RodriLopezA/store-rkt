@@ -67,6 +67,12 @@
             </div>
 
             <div class="grupo-input">
+                <label>DESCRIPCION DEL PRODUCTO</label>
+                <textarea id="descripcion" rows="5" placeholder="Ej: Buzo oversize frizado, calce amplio, tela pesada, ideal para invierno. Detalles de bordado o estampa."></textarea>
+                <small class="input-ayuda">Opcional, pero recomendado. Aparece en la ficha del producto.</small>
+            </div>
+
+            <div class="grupo-input">
                 <label>PRECIO ($)</label>
                 <input type="number" id="precio" placeholder="Ej: 32000" required>
                 <small class="precio-preview" id="precio-preview">$ 0</small>
@@ -159,8 +165,21 @@
             </div>
 
             <div class="grupo-input">
-                <label>COLORES O DETALLES (Separados por coma)</label>
-                <input type="text" id="colores" placeholder="Ej: Negro, Gris, Bordado blanco">
+                <label>COLORES</label>
+                <input type="hidden" id="colores">
+                <div class="admin-color-selector" id="colores-selector" aria-label="Seleccionar colores disponibles">
+                    <button type="button" data-color-admin="Negro" style="--swatch:#050505" aria-label="Negro"></button>
+                    <button type="button" data-color-admin="Blanco" style="--swatch:#ffffff" aria-label="Blanco"></button>
+                    <button type="button" data-color-admin="Gris" style="--swatch:#8a8a8a" aria-label="Gris"></button>
+                    <button type="button" data-color-admin="Azul" style="--swatch:#1646a3" aria-label="Azul"></button>
+                    <button type="button" data-color-admin="Rojo" style="--swatch:#bd1f2d" aria-label="Rojo"></button>
+                    <button type="button" data-color-admin="Verde" style="--swatch:#287338" aria-label="Verde"></button>
+                    <button type="button" data-color-admin="Beige" style="--swatch:#d8c49a" aria-label="Beige"></button>
+                    <button type="button" data-color-admin="Marron" style="--swatch:#6b3e21" aria-label="Marron"></button>
+                    <button type="button" data-color-admin="Rosa" style="--swatch:#e889a7" aria-label="Rosa"></button>
+                    <button type="button" data-color-admin="Celeste" style="--swatch:#77bde8" aria-label="Celeste"></button>
+                </div>
+                <small class="input-ayuda" id="colores-preview">Sin colores seleccionados</small>
             </div>
 
             <div class="grupo-input">

@@ -2600,6 +2600,44 @@ body.cart-open .cart-backdrop {
     color: #c8ff00;
 }
 
+.admin-color-selector {
+    padding: 12px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(44px, 1fr));
+    gap: 10px;
+    border: 2px solid #000000;
+    background: #f7f7f2;
+}
+
+.admin-color-selector button {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    justify-self: center;
+    position: relative;
+    border: 2px solid #000000;
+    border-radius: 50%;
+    background: var(--swatch);
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+}
+
+.admin-color-selector button.selected {
+    outline: 4px solid #20c861;
+    outline-offset: 3px;
+}
+
+.admin-color-selector button.selected::after {
+    content: "";
+    width: 12px;
+    height: 12px;
+    position: absolute;
+    right: -2px;
+    bottom: -2px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    background: #20c861;
+}
+
 .preview-fotos {
     margin-top: 12px;
     display: grid;
@@ -2645,23 +2683,37 @@ body.cart-open .cart-backdrop {
     display: block;
 }
 
-.preview-foto button {
-    width: 36px;
-    height: 36px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+.preview-foto-actions {
     position: absolute;
     top: 6px;
     right: 6px;
     z-index: 2;
+    display: flex;
+    gap: 4px;
+}
+
+.preview-foto-actions button {
+    width: 34px;
+    height: 34px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: 0;
     border-radius: 50%;
-    background: #ff2f2f;
+    background: #050505;
     color: #ffffff;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 900;
     line-height: 1;
+}
+
+.preview-foto-actions .preview-remove {
+    background: #ff2f2f;
+}
+
+.preview-foto-actions button:disabled {
+    opacity: 0.36;
+    cursor: not-allowed;
 }
 
 .preview-foto span {
@@ -2680,12 +2732,20 @@ body.cart-open .cart-backdrop {
 }
 
 .grupo-input input,
-.grupo-input select {
+.grupo-input select,
+.grupo-input textarea {
     min-height: 48px;
     padding: 0 12px;
     border: 2px solid #000000;
     font-family: Arial, sans-serif;
     font-size: 16px;
+}
+
+.grupo-input textarea {
+    min-height: 132px;
+    padding: 12px;
+    resize: vertical;
+    line-height: 1.45;
 }
 
 .grupo-input input[type="file"] {
@@ -3296,6 +3356,10 @@ body.cart-open .cart-backdrop {
 
     .talles-selector {
         grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .admin-color-selector {
+        grid-template-columns: repeat(4, minmax(44px, 1fr));
     }
 
     .categoria-selector {

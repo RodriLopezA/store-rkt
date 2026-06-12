@@ -536,6 +536,70 @@ function escaparAtributo(valor) {
         .replace(/>/g, '&gt;');
 }
 
+function actualizarMeta(nombre, valor, atributo = 'property') {
+    if (!valor) return;
+
+    let meta = document.querySelector(`meta[${atributo}="${nombre}"]`);
+
+    if (!meta) {
+        meta = document.createElement('meta');
+        meta.setAttribute(atributo, nombre);
+        document.head.appendChild(meta);
+    }
+
+    meta.setAttribute('content', valor);
+}
+
+function actualizarMetasProducto(producto, imagen) {
+    const precio = Number(producto.precio || 0);
+    const titulo = `${producto.nombre} | IMPORTADOS RKT`;
+    const descripcion = producto.descripcion
+        ? String(producto.descripcion).slice(0, 155)
+        : `${producto.categoria || 'Producto urbano'} disponible en IMPORTADOS RKT. Precio: $${precio.toLocaleString('es-AR')}. Consulta stock y talle por WhatsApp.`;
+
+    document.title = titulo;
+    actualizarMeta('description', descripcion, 'name');
+    actualizarMeta('og:title', titulo);
+    actualizarMeta('og:description', descripcion);
+    actualizarMeta('og:image', imagen);
+    actualizarMeta('twitter:title', titulo, 'name');
+    actualizarMeta('twitter:description', descripcion, 'name');
+    actualizarMeta('twitter:image', imagen, 'name');
+}
+
+function obtenerDescripcionProducto(producto) {
+    return String(producto.descripcion || '').trim()
+        || 'Prenda urbana seleccionada por IMPORTADOS RKT. Confirmamos stock, talle, color y forma de entrega por WhatsApp antes de cerrar la compra.';
+}
+
+function obtenerGuiaTallesProducto(producto, talles) {
+    const categorias = obtenerCategoriasProducto(producto);
+    const esAbajo = categorias.some((cat) => ['pantalones', 'joggings', 'jeans', 'bermudas', 'cortos', 'partes-abajo'].includes(cat));
+    const esAccesorio = categorias.some((cat) => ['medias', 'rinonera', 'bandoleras', 'cadenas', 'guantes', 'viseras', 'gorros', 'caps', 'pilusos', 'gorras-viceras', 'accesorios'].includes(cat));
+
+    if (esAbajo) {
+        return `
+            <p>Talles disponibles: ${talles.join(', ')}.</p>
+            <p>Para pantalones, joggings, jeans, bermudas y shorts, compara cintura, tiro y largo con una prenda que uses comoda.</p>
+            <p>Si estas entre dos talles, consulta medidas por WhatsApp antes de cerrar la compra.</p>
+        `;
+    }
+
+    if (esAccesorio) {
+        return `
+            <p>Talles disponibles: ${talles.join(', ')}.</p>
+            <p>En accesorios, revisa si el producto es talle unico o si tiene regulacion.</p>
+            <p>Para gorras, viseras, guantes o bandoleras, consulta medidas si buscas un calce especifico.</p>
+        `;
+    }
+
+    return `
+        <p>Talles disponibles: ${talles.join(', ')}.</p>
+        <p>Para remeras, buzos, hoodies, camperas y chalecos, compara ancho de pecho y largo con una prenda que uses comoda.</p>
+        <p>Para calce oversize, elegi tu talle habitual si buscas que quede amplio.</p>
+    `;
+}
+
 function aplicarFiltros() {
     let lista = [...productosData];
 
@@ -835,6 +899,8 @@ function renderizarDetalleProducto() {
     const alertaStock = obtenerAlertaStock(producto);
     const talles = obtenerListaTexto(producto.talles).length ? obtenerListaTexto(producto.talles) : ['U'];
     const colores = obtenerListaTexto(producto.colores);
+    const descripcionProducto = obtenerDescripcionProducto(producto);
+    const guiaTallesHTML = obtenerGuiaTallesProducto(producto, talles);
     const tallesOptions = talles.map((talle) => `<option value="${talle}">${talle}</option>`).join('');
     const coloresOptions = colores.map((color) => `<option value="${color}">${color}</option>`).join('');
     const miniaturasHTML = imagenes.map((imagen, index) => `
@@ -842,6 +908,8 @@ function renderizarDetalleProducto() {
             <img src="${imagen}" alt="${producto.nombre} foto ${index + 1}">
         </button>
     `).join('');
+
+    actualizarMetasProducto(producto, imagenes[0] || producto.imagen_url || 'assets/hero-rkt.webp');
 
     contenedor.innerHTML = `
         <section class="detalle-media">
@@ -868,7 +936,7 @@ function renderizarDetalleProducto() {
             </div>
 
             <p class="detalle-desc">
-                Prenda urbana seleccionada por IMPORTADOS RKT. Confirmamos stock, talle, color y forma de entrega por WhatsApp antes de cerrar la compra.
+                ${descripcionProducto}
             </p>
 
             <div class="detalle-tags">
@@ -930,7 +998,7 @@ function renderizarDetalleProducto() {
             </div>
 
             <div class="detalle-tab-panel active" id="tab-descripcion">
-                <p>${producto.nombre}.</p>
+                <p>${descripcionProducto}</p>
                 <p>Categoria: ${producto.categoria || 'Producto urbano'}.</p>
                 ${colores.length ? `<p>Colores o detalles: ${colores.join(', ')}.</p>` : ''}
                 <p>Producto disponible para consultar por WhatsApp antes de comprar. El total no incluye envio salvo que se indique expresamente.</p>
@@ -938,9 +1006,7 @@ function renderizarDetalleProducto() {
             </div>
 
             <div class="detalle-tab-panel" id="tab-talles">
-                <p>Talles disponibles: ${talles.join(', ')}.</p>
-                <p>Si estas entre dos talles, consulta medidas antes de cerrar la compra.</p>
-                <p>Recomendamos comparar con una prenda que ya uses comoda.</p>
+                ${guiaTallesHTML}
             </div>
 
             <div class="detalle-tab-panel" id="tab-cuidados">

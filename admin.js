@@ -1,4 +1,4 @@
-const SUPABASE_URL = "https://zpyhryenaaiewbjzjmfg.supabase.co";
+﻿const SUPABASE_URL = "https://zpyhryenaaiewbjzjmfg.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpweWhyeWVuYWFpZXdianpqbWZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjgyNTIsImV4cCI6MjA5NjgwNDI1Mn0.hzHO4eRH7xH_O1zo6_lBs9kbsImBNLnDxL23okgK9_g";
 const BUCKET_FOTOS = "fotos-ropa";
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -22,6 +22,14 @@ let fotosSeleccionadas = [];
 let productosAdminCache = [];
 let productoPendienteBorrar = null;
 let productoEditando = null;
+
+function esFotoExistente(foto) {
+    return foto && typeof foto === 'object' && foto.tipo === 'existente';
+}
+
+function obtenerSrcPreviewFoto(foto) {
+    return esFotoExistente(foto) ? foto.url : URL.createObjectURL(foto);
+}
 
 function mostrarEstado(mensaje) {
     const btn = document.getElementById('btn-publicar');
@@ -264,7 +272,9 @@ function sincronizarInputFotos() {
     if (typeof DataTransfer === 'undefined') return;
 
     const dataTransfer = new DataTransfer();
-    fotosSeleccionadas.forEach((foto) => dataTransfer.items.add(foto));
+    fotosSeleccionadas
+        .filter((foto) => !esFotoExistente(foto))
+        .forEach((foto) => dataTransfer.items.add(foto));
     inputFotos.files = dataTransfer.files;
 }
 
@@ -278,8 +288,12 @@ function renderizarPreviewFotos() {
 
     previewFotos.innerHTML = fotosSeleccionadas.map((foto, index) => `
         <article class="preview-foto">
-            <img src="${URL.createObjectURL(foto)}" alt="Foto seleccionada ${index + 1}">
-            <button type="button" data-index="${index}" aria-label="Quitar foto">×</button>
+            <img src="${obtenerSrcPreviewFoto(foto)}" alt="Foto seleccionada ${index + 1}">
+            <div class="preview-foto-actions">
+                <button class="preview-move" type="button" data-accion="izquierda" data-index="${index}" aria-label="Mover foto a la izquierda" ${index === 0 ? 'disabled' : ''}>‹</button>
+                <button class="preview-remove" type="button" data-accion="quitar" data-index="${index}" aria-label="Quitar foto">×</button>
+                <button class="preview-move" type="button" data-accion="derecha" data-index="${index}" aria-label="Mover foto a la derecha" ${index === fotosSeleccionadas.length - 1 ? 'disabled' : ''}>›</button>
+            </div>
             <span>${index + 1}</span>
         </article>
     `).join('');
@@ -310,12 +324,24 @@ function configurarPreviewFotos() {
         const boton = event.target.closest('button');
         if (!boton) return;
 
-        fotosSeleccionadas.splice(Number(boton.dataset.index), 1);
+        const index = Number(boton.dataset.index);
+
+        if (boton.dataset.accion === 'izquierda' && index > 0) {
+            [fotosSeleccionadas[index - 1], fotosSeleccionadas[index]] = [fotosSeleccionadas[index], fotosSeleccionadas[index - 1]];
+        }
+
+        if (boton.dataset.accion === 'derecha' && index < fotosSeleccionadas.length - 1) {
+            [fotosSeleccionadas[index + 1], fotosSeleccionadas[index]] = [fotosSeleccionadas[index], fotosSeleccionadas[index + 1]];
+        }
+
+        if (boton.dataset.accion === 'quitar') {
+            fotosSeleccionadas.splice(index, 1);
+        }
+
         sincronizarInputFotos();
         renderizarPreviewFotos();
     });
 }
-
 function actualizarPrecioPreview() {
     const inputPrecio = document.getElementById('precio');
     const previewPrecio = document.getElementById('precio-preview');
@@ -380,11 +406,59 @@ function configurarTallesSelector() {
     sincronizarTallesSeleccionados();
 }
 
+function obtenerColoresTexto(valor) {
+    return String(valor || '')
+        .split(',')
+        .map((color) => color.trim())
+        .filter(Boolean);
+}
+
+function sincronizarColoresSeleccionados(colores = null) {
+    const inputColores = document.getElementById('colores');
+    const previewColores = document.getElementById('colores-preview');
+    const coloresNormalizados = colores
+        ? obtenerColoresTexto(colores).map((color) => color.toLowerCase())
+        : null;
+
+    document.querySelectorAll('[data-color-admin]').forEach((boton) => {
+        if (coloresNormalizados) {
+            boton.classList.toggle('selected', coloresNormalizados.includes(boton.dataset.colorAdmin.toLowerCase()));
+        }
+    });
+
+    const seleccionados = Array.from(document.querySelectorAll('[data-color-admin].selected'))
+        .map((boton) => boton.dataset.colorAdmin);
+
+    if (inputColores) inputColores.value = seleccionados.join(', ');
+    if (previewColores) {
+        previewColores.innerText = seleccionados.length
+            ? `Seleccionados: ${seleccionados.join(', ')}`
+            : 'Sin colores seleccionados';
+    }
+}
+
+function configurarColoresSelector() {
+    const selector = document.getElementById('colores-selector');
+    if (!selector) return;
+
+    selector.addEventListener('click', (event) => {
+        const boton = event.target.closest('[data-color-admin]');
+        if (!boton) return;
+
+        boton.classList.toggle('selected');
+        sincronizarColoresSeleccionados();
+    });
+
+    sincronizarColoresSeleccionados();
+}
+
 function resetearControlesGuiados() {
     document.querySelectorAll('#talles-selector button').forEach((boton) => {
         boton.classList.toggle('selected', ['XS', 'S', 'M', 'L', 'XL'].includes(boton.dataset.talle));
     });
     sincronizarCategoriaSeleccionada('conjuntos');
+    document.querySelectorAll('[data-color-admin]').forEach((boton) => boton.classList.remove('selected'));
+    sincronizarColoresSeleccionados();
     document.getElementById('descuento').value = '';
     document.getElementById('nuevo-ingreso').checked = true;
     sincronizarTallesSeleccionados();
@@ -442,10 +516,16 @@ async function borrarProductoConfirmado() {
 
 function cargarProductoParaEditar(producto) {
     productoEditando = producto;
+    fotosSeleccionadas = obtenerImagenesProducto(producto)
+        .slice(0, MAX_FOTOS_PRODUCTO)
+        .map((url) => ({ tipo: 'existente', url }));
+    sincronizarInputFotos();
+    renderizarPreviewFotos();
     document.getElementById('nombre').value = producto.nombre || '';
+    document.getElementById('descripcion').value = producto.descripcion || '';
     document.getElementById('precio').value = producto.precio || '';
     sincronizarCategoriaSeleccionada(producto.categoria || 'conjuntos');
-    document.getElementById('colores').value = producto.colores || '';
+    sincronizarColoresSeleccionados(producto.colores || '');
     document.getElementById('descuento').value = producto.descuento_porcentaje || '';
     document.getElementById('nuevo-ingreso').checked = producto.nuevo_ingreso !== false;
 
@@ -611,6 +691,7 @@ form.addEventListener('submit', async (e) => {
     setPublicando(true, "Subiendo...");
 
     const nombre = document.getElementById('nombre').value;
+    const descripcion = document.getElementById('descripcion').value.trim();
     const precio = Number(document.getElementById('precio').value);
     const descuentoPorcentaje = obtenerDescuentoFormulario();
     const precioAnterior = descuentoPorcentaje > 0
@@ -621,7 +702,7 @@ form.addEventListener('submit', async (e) => {
     const categoriasBusqueda = obtenerCategoriasAutomaticas(categoria);
     const talles = document.getElementById('talles').value;
     const colores = document.getElementById('colores').value;
-    const fotosArchivos = fotosSeleccionadas.length
+    const fotosParaGuardar = fotosSeleccionadas.length
         ? fotosSeleccionadas
         : Array.from(inputFotos.files);
 
@@ -631,11 +712,11 @@ form.addEventListener('submit', async (e) => {
             throw new Error("Tenes que iniciar sesion para publicar.");
         }
 
-        if (!productoEditando && !fotosArchivos.length) {
-            throw new Error("Selecciona al menos una foto antes de publicar.");
+        if (!fotosParaGuardar.length) {
+            throw new Error("Selecciona al menos una foto antes de guardar.");
         }
 
-        if (fotosArchivos.length > MAX_FOTOS_PRODUCTO) {
+        if (fotosParaGuardar.length > MAX_FOTOS_PRODUCTO) {
             throw new Error(`Selecciona como maximo ${MAX_FOTOS_PRODUCTO} fotos por producto.`);
         }
 
@@ -643,12 +724,16 @@ form.addEventListener('submit', async (e) => {
             throw new Error("Selecciona al menos un talle disponible.");
         }
 
-        let urlsFotos = productoEditando && !fotosArchivos.length
-            ? obtenerImagenesProducto(productoEditando)
-            : [];
+        const urlsPrevias = productoEditando ? obtenerImagenesProducto(productoEditando) : [];
+        const urlsFotos = [];
 
-        for (const [index, fotoArchivo] of fotosArchivos.entries()) {
-            mostrarEstado(`Preparando fotos ${index + 1}/${fotosArchivos.length}...`);
+        for (const [index, fotoArchivo] of fotosParaGuardar.entries()) {
+            if (esFotoExistente(fotoArchivo)) {
+                urlsFotos.push(fotoArchivo.url);
+                continue;
+            }
+
+            mostrarEstado(`Preparando fotos ${index + 1}/${fotosParaGuardar.length}...`);
             const fotoComprimida = await comprimirImagen(fotoArchivo);
 
             if (!fotoComprimida) {
@@ -661,7 +746,7 @@ form.addEventListener('submit', async (e) => {
                 .replace(/[^a-zA-Z0-9-_]/g, '');
             const nombreImagen = `${Date.now()}-${index + 1}-${nombreBase || 'producto'}.${fotoComprimida.extension}`;
 
-            mostrarEstado(`Subiendo fotos ${index + 1}/${fotosArchivos.length}...`);
+            mostrarEstado(`Subiendo fotos ${index + 1}/${fotosParaGuardar.length}...`);
             const { error: uploadError } = await supabaseClient.storage
                 .from(BUCKET_FOTOS)
                 .upload(nombreImagen, fotoComprimida.blob, {
@@ -681,6 +766,7 @@ form.addEventListener('submit', async (e) => {
         mostrarEstado("Guardando producto...");
         const datosProducto = {
             nombre,
+            descripcion,
             precio,
             categoria,
             talles,
@@ -706,8 +792,9 @@ form.addEventListener('submit', async (e) => {
 
         if (dbError) throw dbError;
 
-        if (productoEditando && fotosArchivos.length) {
-            const pathsAnteriores = obtenerImagenesProducto(productoEditando)
+        if (productoEditando) {
+            const urlsEliminadas = urlsPrevias.filter((url) => !urlsFotos.includes(url));
+            const pathsAnteriores = urlsEliminadas
                 .map((imagen) => obtenerPathStorage(imagen))
                 .filter(Boolean);
 
@@ -723,8 +810,8 @@ form.addEventListener('submit', async (e) => {
         }
 
         const mensajeExito = productoEditando
-            ? "🚀 ¡Producto actualizado con éxito!"
-            : "🚀 ¡Producto publicado con éxito!";
+            ? "ðŸš€ Â¡Producto actualizado con Ã©xito!"
+            : "ðŸš€ Â¡Producto publicado con Ã©xito!";
         mostrarToast(mensajeExito);
         productoEditando = null;
         form.reset();
@@ -754,4 +841,5 @@ configurarPreviewFotos();
 configurarPrecioPreview();
 configurarCategoriaSelector();
 configurarTallesSelector();
+configurarColoresSelector();
 verificarSesion();
