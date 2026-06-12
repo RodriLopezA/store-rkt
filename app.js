@@ -27,6 +27,11 @@ async function obtenerProductos() {
 
     productosData = data || [];
 
+    if (document.getElementById('producto-detalle')) {
+        renderizarDetalleProducto();
+        return;
+    }
+
     if (loadingDestacados) {
         renderizarDestacados(productosData.slice(0, 4));
     }
@@ -113,6 +118,7 @@ function renderizarCards(lista, grid) {
 
         const card = document.createElement('article');
         card.className = 'producto-card';
+        card.tabIndex = 0;
         card.innerHTML = `
             <div class="img-contenedor">
                 <span class="badge-rkt">Nuevo ingreso</span>
@@ -132,7 +138,128 @@ function renderizarCards(lista, grid) {
                 <button class="btn-wsp" onclick="enviarPedido('${escaparTexto(prod.nombre)}', '${precio}', this)">Consultar por WhatsApp</button>
             </div>
         `;
+
+        card.addEventListener('click', (event) => {
+            if (event.target.closest('button')) return;
+            window.location.href = obtenerUrlProducto(prod);
+        });
+
+        card.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter') return;
+            window.location.href = obtenerUrlProducto(prod);
+        });
+
         grid.appendChild(card);
+    });
+}
+
+function obtenerUrlProducto(prod) {
+    if (prod.id !== undefined && prod.id !== null) {
+        return `producto.html?id=${encodeURIComponent(prod.id)}`;
+    }
+
+    return `producto.html?nombre=${encodeURIComponent(prod.nombre || '')}`;
+}
+
+function renderizarDetalleProducto() {
+    const contenedor = document.getElementById('producto-detalle');
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const nombre = params.get('nombre');
+
+    const producto = productosData.find((prod) => {
+        if (id !== null && String(prod.id) === String(id)) return true;
+        if (nombre !== null && String(prod.nombre) === String(nombre)) return true;
+        return false;
+    });
+
+    if (!producto) {
+        contenedor.innerHTML = '<div class="mensaje-alerta">No se encontro el producto.</div>';
+        return;
+    }
+
+    const precio = Number(producto.precio || 0);
+    const precioAnterior = Math.round(precio * 1.25);
+    const talles = producto.talles ? producto.talles.split(',').map((t) => t.trim()).filter(Boolean) : ['U'];
+    const tallesOptions = talles.map((talle) => `<option value="${talle}">${talle}</option>`).join('');
+
+    contenedor.innerHTML = `
+        <section class="detalle-media">
+            <div class="detalle-img-principal">
+                <img src="${producto.imagen_url}" alt="${producto.nombre}">
+            </div>
+            <div class="detalle-miniaturas">
+                <button type="button" class="active"><img src="${producto.imagen_url}" alt="${producto.nombre}"></button>
+                <button type="button"><img src="${producto.imagen_url}" alt="${producto.nombre}"></button>
+            </div>
+        </section>
+
+        <section class="detalle-info">
+            <div class="detalle-pills">
+                <span>${producto.categoria || 'Producto'}</span>
+                <strong>Ingreso</strong>
+            </div>
+
+            <h1>${producto.nombre}</h1>
+            <p class="detalle-rating">★ 0.0 · 0 reseñas de la comunidad</p>
+
+            <div class="detalle-precios">
+                <strong>$${precio.toLocaleString('es-AR')}</strong>
+                <span>$${precioAnterior.toLocaleString('es-AR')}</span>
+            </div>
+
+            <p class="detalle-desc">
+                Prenda urbana seleccionada para el catalogo. Consulta disponibilidad, talle y forma de entrega antes de cerrar la compra.
+            </p>
+
+            <div class="detalle-tags">
+                <span>${producto.categoria || 'URBANO'}</span>
+                <span>STOCK</span>
+                <span>RKT</span>
+            </div>
+
+            <div class="detalle-divider"></div>
+
+            <label class="detalle-label" for="detalle-talle">Talle</label>
+            <select id="detalle-talle" class="detalle-select">${tallesOptions}</select>
+
+            <span class="detalle-label">Cantidad</span>
+            <div class="detalle-cantidad">
+                <button type="button" id="cantidad-menos">−</button>
+                <strong id="cantidad-valor">1</strong>
+                <button type="button" id="cantidad-mas">+</button>
+            </div>
+
+            <span class="detalle-alerta">Ultimas unidades</span>
+
+            <button class="detalle-cta" type="button" id="detalle-consultar">Agregar al carrito</button>
+        </section>
+    `;
+
+    configurarDetalleAcciones(producto, precio);
+}
+
+function configurarDetalleAcciones(producto, precio) {
+    const cantidadValor = document.getElementById('cantidad-valor');
+    const menos = document.getElementById('cantidad-menos');
+    const mas = document.getElementById('cantidad-mas');
+    const consultar = document.getElementById('detalle-consultar');
+
+    menos.addEventListener('click', () => {
+        const actual = Number(cantidadValor.innerText);
+        cantidadValor.innerText = Math.max(1, actual - 1);
+    });
+
+    mas.addEventListener('click', () => {
+        const actual = Number(cantidadValor.innerText);
+        cantidadValor.innerText = actual + 1;
+    });
+
+    consultar.addEventListener('click', () => {
+        const talle = document.getElementById('detalle-talle').value;
+        const cantidad = cantidadValor.innerText;
+        const textoMensaje = `Hola. Quiero consultar por este producto:\n\nProducto: ${producto.nombre}\nTalle: ${talle}\nCantidad: ${cantidad}\nPrecio: $${Number(precio).toLocaleString('es-AR')}\n\nSigue disponible?`;
+        window.open(`https://wa.me/${NUMERO_WSP}?text=${encodeURIComponent(textoMensaje)}`, '_blank');
     });
 }
 
@@ -203,6 +330,8 @@ function configurarFiltros() {
 }
 
 function configurarHeaderScroll() {
+    if (!document.querySelector('.hero-header')) return;
+
     const actualizarHeader = () => {
         document.body.classList.toggle('scrolled', window.scrollY > 80);
     };

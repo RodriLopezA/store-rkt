@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban RKT | Producto</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="catalog-page product-page scrolled">
+
+    <header class="site-header catalog-header">
+        <a class="brand" href="index.html#inicio">URBAN RKT</a>
+        <nav class="main-nav" aria-label="Navegacion principal">
+            <div class="nav-item has-dropdown">
+                <a class="nav-link" href="index.html#inicio">Inicio</a>
+                <div class="dropdown-menu">
+                    <a href="index.html#destacados">Productos destacados</a>
+                    <a href="catalogo.html">Productos</a>
+                    <button type="button" data-categoria="todo">Todo</button>
+                    <button type="button" data-categoria="conjuntos">Conjuntos</button>
+                    <button type="button" data-categoria="buzos">Buzos</button>
+                    <button type="button" data-categoria="joggings">Joggings</button>
+                </div>
+            </div>
+            <a class="nav-link" href="catalogo.html">Productos</a>
+            <a class="nav-link" href="catalogo.html?categoria=conjuntos">Blacktop</a>
+            <a class="nav-link" href="index.html#destacados">Blog</a>
+            <a class="nav-link" href="index.html#categorias">Cultura</a>
+            <a class="nav-link" href="https://wa.me/549221XXXXXXX" target="_blank" rel="noopener">Contactanos</a>
+        </nav>
+        <form class="header-search" action="catalogo.html">
+            <input type="search" name="q" placeholder="Buscar productos..." aria-label="Buscar productos">
+        </form>
+        <a class="admin-link" href="admin.html">Admin</a>
+    </header>
+
+    <main class="product-detail-shell">
+        <a class="back-link" href="catalogo.html" aria-label="Volver a productos">←</a>
+        <div id="producto-detalle" class="producto-detalle">
+            <div class="mensaje-alerta">Cargando producto...</div>
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
