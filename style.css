@@ -42,7 +42,7 @@ button {
     width: calc(100% - 48px);
     padding: 0 26px;
     display: grid;
-    grid-template-columns: 220px minmax(420px, 1fr) 220px auto;
+    grid-template-columns: 220px minmax(420px, 1fr) 220px;
     align-items: center;
     border: 1px solid rgba(255, 255, 255, 0.22);
     background: rgba(8, 8, 8, 0.22);
@@ -762,14 +762,14 @@ body.scrolled .hero-scroll-cue {
 }
 
 .detalle-beneficios {
-    width: min(640px, 100%);
-    margin-left: auto;
-    margin-bottom: 34px;
+    width: 100%;
+    margin: 22px auto 0;
     display: grid;
-    gap: 16px;
+    gap: 14px;
 }
 
 .detalle-beneficios div {
+    min-height: 48px;
     padding-left: 34px;
     position: relative;
 }
@@ -807,6 +807,22 @@ body.scrolled .hero-scroll-cue {
     gap: 4px;
     background: #e5e5df;
     border-radius: 5px;
+}
+
+.relacionados-section {
+    grid-column: 1 / -1;
+    margin-top: 42px;
+}
+
+.relacionados-section h2 {
+    margin-bottom: 24px;
+    color: #050505;
+    font-size: 26px;
+    font-weight: 900;
+}
+
+.productos-grid.relacionados-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .detalle-tabs button {
@@ -1293,7 +1309,7 @@ body.scrolled .hero-scroll-cue {
 
 @media (max-width: 1100px) {
     .site-header {
-        grid-template-columns: 180px minmax(320px, 1fr) 180px auto;
+        grid-template-columns: 180px minmax(320px, 1fr) 180px;
         padding: 0 18px;
     }
 
@@ -1315,6 +1331,10 @@ body.scrolled .hero-scroll-cue {
 
     .category-grid {
         grid-template-columns: repeat(2, minmax(220px, 1fr));
+    }
+
+    .productos-grid.relacionados-grid {
+        grid-template-columns: repeat(2, minmax(180px, 1fr));
     }
 }
 
@@ -1350,11 +1370,6 @@ body.scrolled .hero-scroll-cue {
         grid-column: 1 / -1;
         justify-self: stretch;
         width: 100%;
-    }
-
-    .admin-link {
-        grid-column: 2;
-        grid-row: 1;
     }
 
     .nav-link,
@@ -1484,6 +1499,10 @@ body.scrolled .hero-scroll-cue {
 
     .detalle-tabs {
         grid-template-columns: 1fr;
+    }
+
+    .productos-grid.relacionados-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .prod-nom {

@@ -233,9 +233,7 @@ function renderizarDetalleProducto() {
             <span class="detalle-alerta">Ultimas unidades</span>
 
             <button class="detalle-cta" type="button" id="detalle-consultar">Agregar al carrito</button>
-        </section>
 
-        <section class="detalle-extra">
             <div class="detalle-beneficios">
                 <div>
                     <strong>Envio coordinado</strong>
@@ -250,6 +248,9 @@ function renderizarDetalleProducto() {
                     <span>Prendas urbanas revisadas antes de entregar</span>
                 </div>
             </div>
+        </section>
+
+        <section class="detalle-extra">
 
             <div class="detalle-tabs">
                 <button class="active" type="button" data-tab="descripcion">Descripcion</button>
@@ -276,10 +277,16 @@ function renderizarDetalleProducto() {
                 <p>Planchar del reves si la prenda lo permite.</p>
             </div>
         </section>
+
+        <section class="relacionados-section">
+            <h2>Tambien te puede interesar</h2>
+            <div class="productos-grid relacionados-grid" id="grid-relacionados"></div>
+        </section>
     `;
 
     configurarDetalleAcciones(producto, precio);
     configurarDetalleTabs();
+    renderizarRelacionados(producto);
 }
 
 function generarSku(nombre) {
@@ -327,6 +334,27 @@ function configurarDetalleTabs() {
             document.getElementById(`tab-${boton.dataset.tab}`).classList.add('active');
         });
     });
+}
+
+function renderizarRelacionados(productoActual) {
+    const grid = document.getElementById('grid-relacionados');
+    if (!grid) return;
+
+    const relacionados = productosData
+        .filter((prod) => {
+            const mismoProducto = productoActual.id !== undefined
+                ? String(prod.id) === String(productoActual.id)
+                : String(prod.nombre) === String(productoActual.nombre);
+            return !mismoProducto;
+        })
+        .slice(0, 4);
+
+    if (!relacionados.length) {
+        grid.innerHTML = '<div class="mensaje-alerta">No hay productos relacionados por ahora.</div>';
+        return;
+    }
+
+    renderizarCards(relacionados, grid);
 }
 
 function escaparTexto(texto) {
