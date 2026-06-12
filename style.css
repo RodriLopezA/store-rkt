@@ -209,6 +209,11 @@ body.scrolled .hero-header .header-search::after,
     position: relative;
 }
 
+.has-dropdown {
+    padding-bottom: 18px;
+    margin-bottom: -18px;
+}
+
 .dropdown-menu {
     min-width: 220px;
     padding: 10px;
@@ -216,7 +221,7 @@ body.scrolled .hero-header .header-search::after,
     flex-direction: column;
     gap: 4px;
     position: absolute;
-    top: 68px;
+    top: 54px;
     left: -12px;
     background: rgba(255, 255, 255, 0.96);
     border: 1px solid #d8d8d0;
@@ -1380,7 +1385,7 @@ body.scrolled .hero-scroll-cue {
     }
 
     .dropdown-menu {
-        top: 32px;
+        top: 40px;
         left: 0;
     }
 
