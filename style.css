@@ -1753,7 +1753,8 @@ body.cart-open .cart-backdrop {
 
 .bg-admin {
     background-color: #f0f0f0;
-    padding: 20px;
+    min-height: 100vh;
+    padding: max(16px, env(safe-area-inset-top)) 16px max(18px, env(safe-area-inset-bottom));
 }
 
 .admin-container {
@@ -1819,10 +1820,11 @@ body.cart-open .cart-backdrop {
 #btn-login,
 #btn-logout,
 #btn-recargar-productos {
+    min-height: 48px;
     background: #000000;
     color: #ffffff;
     border: 0;
-    padding: 10px 14px;
+    padding: 0 18px;
     font-weight: 800;
 }
 
@@ -1880,9 +1882,9 @@ body.cart-open .cart-backdrop {
 }
 
 .admin-producto button {
-    min-height: 36px;
+    min-height: 48px;
     border: 0;
-    padding: 0 12px;
+    padding: 0 14px;
     background: #000000;
     color: #ffffff;
     font-weight: 800;
@@ -1939,18 +1941,25 @@ body.cart-open .cart-backdrop {
 
 .grupo-input input,
 .grupo-input select {
-    padding: 10px;
+    min-height: 48px;
+    padding: 0 12px;
     border: 2px solid #000000;
     font-family: Arial, sans-serif;
-    font-size: 15px;
+    font-size: 16px;
+}
+
+.grupo-input input[type="file"] {
+    min-height: 54px;
+    padding: 12px;
 }
 
 #btn-publicar {
     width: 100%;
+    min-height: 56px;
     background: #000000;
     color: #ffffff;
     border: none;
-    padding: 15px;
+    padding: 0 18px;
     font-size: 18px;
     font-weight: bold;
     cursor: pointer;
@@ -2216,10 +2225,31 @@ body.cart-open .cart-backdrop {
         align-items: flex-start;
     }
 
+    .bg-admin {
+        padding: max(10px, env(safe-area-inset-top)) 10px max(14px, env(safe-area-inset-bottom));
+    }
+
+    .admin-container {
+        width: 100%;
+        margin: 10px auto 18px;
+        padding: 20px 16px;
+        border-width: 3px;
+        box-shadow: 5px 5px 0 #000000;
+    }
+
+    .admin-container h1 {
+        font-size: 24px;
+    }
+
     .admin-panel-head,
     .admin-listado-head {
         align-items: flex-start;
         flex-direction: column;
+    }
+
+    .admin-listado-head button,
+    #btn-logout {
+        width: 100%;
     }
 
     .admin-metricas {
@@ -2241,7 +2271,16 @@ body.cart-open .cart-backdrop {
     }
 
     .admin-producto button {
-        grid-column: 1 / -1;
+        grid-column: auto;
+        width: 100%;
+    }
+
+    .admin-producto button[data-accion="stock"] {
+        grid-column: 1 / 2;
+    }
+
+    .admin-producto button[data-accion="borrar"] {
+        grid-column: 2 / 3;
     }
 
     .admin-skeleton-btn {
