@@ -18,6 +18,10 @@
 
     <header class="site-header catalog-header">
         <a class="brand" href="index.html#inicio">URBAN RKT</a>
+        <button class="mobile-filter-toggle" type="button" id="mobile-filter-toggle" aria-label="Abrir filtros">
+            <i aria-hidden="true"><span></span><span></span><span></span></i>
+            <b>Filtros</b>
+        </button>
         <nav class="main-nav" aria-label="Navegacion principal">
             <a class="nav-link" href="index.html#inicio">Inicio</a>
             <div class="nav-item has-dropdown">
@@ -50,6 +54,11 @@
 
     <main class="catalog-shell catalog-page-shell" id="catalogo">
         <aside class="filters-panel" aria-label="Filtros">
+            <div class="filters-mobile-head">
+                <strong>Filtros</strong>
+                <button type="button" id="mobile-filter-close">Cerrar</button>
+            </div>
+
             <select id="orden-productos" class="sort-select" aria-label="Ordenar productos">
                 <option value="relevantes">Mas relevantes</option>
                 <option value="menor-precio">Menor precio</option>
@@ -169,6 +178,7 @@
             </div>
         </section>
     </main>
+    <div class="filters-backdrop" id="filters-backdrop"></div>
 
     <footer class="site-footer">
         <div class="footer-grid">

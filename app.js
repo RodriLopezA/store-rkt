@@ -136,6 +136,10 @@ function crearCarritoUI() {
     if (document.getElementById('cart-drawer')) return;
 
     document.body.insertAdjacentHTML('beforeend', `
+        <a class="whatsapp-fab" href="https://wa.me/${NUMERO_WSP}" target="_blank" rel="noopener" aria-label="Abrir WhatsApp">
+            WhatsApp
+        </a>
+
         <button class="cart-fab" type="button" id="cart-open" aria-label="Abrir carrito">
             <span>Carrito</span>
             <strong id="cart-count">0</strong>
@@ -577,6 +581,8 @@ function aplicarFiltros() {
 function renderizarGrid(lista) {
     const grid = document.getElementById('grid-productos');
     const contador = document.getElementById('contador-productos');
+    if (!grid || !contador) return;
+
     grid.innerHTML = "";
     contador.innerText = lista.length;
 
@@ -1066,8 +1072,10 @@ function configurarFiltros() {
 
         boton.addEventListener('click', () => {
             categoriaActiva = boton.dataset.categoria;
+            filtrosActivos.categorias.clear();
 
             botonesCategoria.forEach((item) => item.classList.remove('active'));
+            document.querySelectorAll('[data-filter-categoria]').forEach((item) => item.classList.remove('active'));
             document.querySelectorAll(`[data-categoria="${categoriaActiva}"]`).forEach((item) => {
                 item.classList.add('active');
             });
@@ -1169,6 +1177,34 @@ function configurarFiltros() {
     });
 }
 
+function configurarFiltrosMobile() {
+    const btnAbrir = document.getElementById('mobile-filter-toggle');
+    const btnCerrar = document.getElementById('mobile-filter-close');
+    const backdrop = document.getElementById('filters-backdrop');
+    const panel = document.querySelector('.filters-panel');
+
+    if (!btnAbrir || !panel) return;
+
+    const abrir = () => {
+        document.body.classList.add('filters-open');
+        btnAbrir.setAttribute('aria-expanded', 'true');
+    };
+
+    const cerrar = () => {
+        document.body.classList.remove('filters-open');
+        btnAbrir.setAttribute('aria-expanded', 'false');
+    };
+
+    btnAbrir.setAttribute('aria-expanded', 'false');
+    btnAbrir.addEventListener('click', abrir);
+    btnCerrar?.addEventListener('click', cerrar);
+    backdrop?.addEventListener('click', cerrar);
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') cerrar();
+    });
+}
+
 function configurarHeaderScroll() {
     if (!document.querySelector('.hero-header')) return;
 
@@ -1185,5 +1221,6 @@ window.addEventListener('DOMContentLoaded', () => {
     crearCarritoUI();
     configurarHeaderScroll();
     configurarFiltros();
+    configurarFiltrosMobile();
     obtenerProductos();
 });
