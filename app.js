@@ -234,9 +234,60 @@ function renderizarDetalleProducto() {
 
             <button class="detalle-cta" type="button" id="detalle-consultar">Agregar al carrito</button>
         </section>
+
+        <section class="detalle-extra">
+            <div class="detalle-beneficios">
+                <div>
+                    <strong>Envio coordinado</strong>
+                    <span>Entrega o retiro segun zona disponible</span>
+                </div>
+                <div>
+                    <strong>Cambios faciles</strong>
+                    <span>Por talle o producto disponible</span>
+                </div>
+                <div>
+                    <strong>Calidad seleccionada</strong>
+                    <span>Prendas urbanas revisadas antes de entregar</span>
+                </div>
+            </div>
+
+            <div class="detalle-tabs">
+                <button class="active" type="button" data-tab="descripcion">Descripcion</button>
+                <button type="button" data-tab="talles">Guia de talles</button>
+                <button type="button" data-tab="cuidados">Cuidados</button>
+            </div>
+
+            <div class="detalle-tab-panel active" id="tab-descripcion">
+                <p>${producto.nombre}.</p>
+                <p>Categoria: ${producto.categoria || 'Producto urbano'}.</p>
+                <p>Producto disponible para consultar por WhatsApp antes de comprar.</p>
+                <strong>SKU: ${generarSku(producto.nombre)}</strong>
+            </div>
+
+            <div class="detalle-tab-panel" id="tab-talles">
+                <p>Talles disponibles: ${talles.join(', ')}.</p>
+                <p>Si estas entre dos talles, consulta medidas antes de cerrar la compra.</p>
+                <p>Recomendamos comparar con una prenda que ya uses comoda.</p>
+            </div>
+
+            <div class="detalle-tab-panel" id="tab-cuidados">
+                <p>Lavar con agua fria y colores similares.</p>
+                <p>No usar lavandina. Secar a la sombra para cuidar color y tela.</p>
+                <p>Planchar del reves si la prenda lo permite.</p>
+            </div>
+        </section>
     `;
 
     configurarDetalleAcciones(producto, precio);
+    configurarDetalleTabs();
+}
+
+function generarSku(nombre) {
+    return String(nombre || 'producto')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, '');
 }
 
 function configurarDetalleAcciones(producto, precio) {
@@ -260,6 +311,21 @@ function configurarDetalleAcciones(producto, precio) {
         const cantidad = cantidadValor.innerText;
         const textoMensaje = `Hola. Quiero consultar por este producto:\n\nProducto: ${producto.nombre}\nTalle: ${talle}\nCantidad: ${cantidad}\nPrecio: $${Number(precio).toLocaleString('es-AR')}\n\nSigue disponible?`;
         window.open(`https://wa.me/${NUMERO_WSP}?text=${encodeURIComponent(textoMensaje)}`, '_blank');
+    });
+}
+
+function configurarDetalleTabs() {
+    const botones = document.querySelectorAll('.detalle-tabs button');
+    const paneles = document.querySelectorAll('.detalle-tab-panel');
+
+    botones.forEach((boton) => {
+        boton.addEventListener('click', () => {
+            botones.forEach((item) => item.classList.remove('active'));
+            paneles.forEach((item) => item.classList.remove('active'));
+
+            boton.classList.add('active');
+            document.getElementById(`tab-${boton.dataset.tab}`).classList.add('active');
+        });
     });
 }
 

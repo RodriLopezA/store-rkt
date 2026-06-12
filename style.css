@@ -756,6 +756,101 @@ body.scrolled .hero-scroll-cue {
     color: #050505;
 }
 
+.detalle-extra {
+    grid-column: 1 / -1;
+    margin-top: 16px;
+}
+
+.detalle-beneficios {
+    width: min(640px, 100%);
+    margin-left: auto;
+    margin-bottom: 34px;
+    display: grid;
+    gap: 16px;
+}
+
+.detalle-beneficios div {
+    padding-left: 34px;
+    position: relative;
+}
+
+.detalle-beneficios div::before {
+    content: "";
+    width: 18px;
+    height: 18px;
+    border: 2px solid #050505;
+    border-radius: 50%;
+    position: absolute;
+    left: 0;
+    top: 2px;
+}
+
+.detalle-beneficios strong {
+    display: block;
+    color: #050505;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.detalle-beneficios span {
+    display: block;
+    margin-top: 4px;
+    color: #6b6b6b;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.detalle-tabs {
+    padding: 4px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    background: #e5e5df;
+    border-radius: 5px;
+}
+
+.detalle-tabs button {
+    height: 36px;
+    border: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: #6b6b6b;
+    font-size: 14px;
+    font-weight: 800;
+}
+
+.detalle-tabs button.active {
+    background: #ffffff;
+    color: #050505;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.detalle-tab-panel {
+    display: none;
+    padding: 26px 0 8px;
+    color: #050505;
+}
+
+.detalle-tab-panel.active {
+    display: block;
+}
+
+.detalle-tab-panel p {
+    margin-bottom: 8px;
+    font-size: 16px;
+    line-height: 1.55;
+    font-weight: 600;
+}
+
+.detalle-tab-panel strong {
+    display: block;
+    margin-top: 6px;
+    color: #6b6b6b;
+    font-size: 18px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
 .filters-panel {
     display: flex;
     flex-direction: column;
@@ -1380,6 +1475,15 @@ body.scrolled .hero-scroll-cue {
 
     .detalle-miniaturas button {
         width: 82px;
+    }
+
+    .detalle-beneficios {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .detalle-tabs {
+        grid-template-columns: 1fr;
     }
 
     .prod-nom {
