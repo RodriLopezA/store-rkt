@@ -10,6 +10,7 @@ let ordenActivo = "relevantes";
 
 async function obtenerProductos() {
     const loading = document.getElementById('loading');
+    const loadingDestacados = document.getElementById('loading-destacados');
 
     const { data, error } = await supabaseClient
         .from('productos')
@@ -18,14 +19,21 @@ async function obtenerProductos() {
 
     if (error) {
         console.error("Error cargando productos:", error);
-        loading.innerText = "No se pudieron cargar los productos.";
+        if (loading) loading.innerText = "No se pudieron cargar los productos.";
+        if (loadingDestacados) loadingDestacados.innerText = "No se pudieron cargar los destacados.";
         return;
     }
 
     productosData = data || [];
-    loading.style.display = 'none';
-    renderizarDestacados(productosData.slice(0, 4));
-    aplicarFiltros();
+
+    if (loadingDestacados) {
+        renderizarDestacados(productosData.slice(0, 4));
+    }
+
+    if (loading) {
+        loading.style.display = 'none';
+        aplicarFiltros();
+    }
 }
 
 function normalizarCategoria(categoria) {
@@ -144,7 +152,18 @@ function configurarFiltros() {
     const botonesCategoria = document.querySelectorAll('[data-categoria]');
     const selectOrden = document.getElementById('orden-productos');
 
+    const params = new URLSearchParams(window.location.search);
+    const categoriaUrl = params.get('categoria');
+    if (categoriaUrl) {
+        categoriaActiva = categoriaUrl;
+        botonesCategoria.forEach((boton) => boton.classList.remove('active'));
+    }
+
     botonesCategoria.forEach((boton) => {
+        if (boton.dataset.categoria === categoriaActiva) {
+            boton.classList.add('active');
+        }
+
         boton.addEventListener('click', () => {
             categoriaActiva = boton.dataset.categoria;
 
@@ -156,15 +175,18 @@ function configurarFiltros() {
             aplicarFiltros();
 
             if (boton.closest('.dropdown-menu')) {
-                document.getElementById('catalogo').scrollIntoView({ behavior: 'smooth' });
+                const catalogo = document.getElementById('catalogo');
+                if (catalogo) catalogo.scrollIntoView({ behavior: 'smooth' });
             }
         });
     });
 
-    selectOrden.addEventListener('change', () => {
-        ordenActivo = selectOrden.value;
-        aplicarFiltros();
-    });
+    if (selectOrden) {
+        selectOrden.addEventListener('change', () => {
+            ordenActivo = selectOrden.value;
+            aplicarFiltros();
+        });
+    }
 }
 
 function configurarHeaderScroll() {

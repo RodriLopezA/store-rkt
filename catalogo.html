@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban RKT | Catalogo completo</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="catalog-page scrolled">
+
+    <header class="site-header catalog-header">
+        <a class="brand" href="index.html#inicio">URBAN RKT</a>
+        <nav class="main-nav" aria-label="Navegacion principal">
+            <div class="nav-item has-dropdown">
+                <a class="nav-link" href="index.html#inicio">Inicio</a>
+                <div class="dropdown-menu">
+                    <a href="index.html#destacados">Productos destacados</a>
+                    <a href="catalogo.html">Catalogo</a>
+                    <button type="button" data-categoria="todo">Todo</button>
+                    <button type="button" data-categoria="conjuntos">Conjuntos</button>
+                    <button type="button" data-categoria="buzos">Buzos</button>
+                    <button type="button" data-categoria="joggings">Joggings</button>
+                    <a href="index.html#ofertas">Ofertas</a>
+                    <a href="index.html#cambios">Cambios y devoluciones</a>
+                    <a href="index.html#contacto">Contacto</a>
+                </div>
+            </div>
+            <a class="nav-link" href="catalogo.html">Catalogo</a>
+            <a class="nav-link" href="index.html#ofertas">Ofertas</a>
+            <a class="nav-link" href="index.html#cambios">Cambios y devoluciones</a>
+            <a class="nav-link" href="index.html#contacto">Contacto</a>
+        </nav>
+        <a class="admin-link" href="admin.html">Admin</a>
+    </header>
+
+    <main class="catalog-shell catalog-page-shell" id="catalogo">
+        <aside class="filters-panel" aria-label="Filtros">
+            <select id="orden-productos" class="sort-select" aria-label="Ordenar productos">
+                <option value="relevantes">Mas relevantes</option>
+                <option value="menor-precio">Menor precio</option>
+                <option value="mayor-precio">Mayor precio</option>
+                <option value="nombre">Nombre</option>
+            </select>
+
+            <label class="switch-row">
+                <span>Retiro por sucursal</span>
+                <input type="checkbox">
+                <i></i>
+            </label>
+
+            <label class="switch-row">
+                <span>Envio a domicilio</span>
+                <input type="checkbox" checked>
+                <i></i>
+            </label>
+
+            <button class="filter-accordion active" data-categoria="todo">Categoria de producto</button>
+            <button class="filter-accordion" data-categoria="conjuntos">Conjuntos</button>
+            <button class="filter-accordion" data-categoria="buzos">Buzos / Camperas</button>
+            <button class="filter-accordion" data-categoria="joggings">Joggings / Pantalones</button>
+            <button class="filter-accordion">Talle</button>
+            <button class="filter-accordion">Precio</button>
+            <button class="filter-accordion">Color</button>
+        </aside>
+
+        <section class="catalog-content">
+            <div class="catalog-toolbar">
+                <h1>Catalogo completo</h1>
+                <p><strong id="contador-productos">0</strong> resultados</p>
+            </div>
+
+            <div id="loading" class="mensaje-alerta">Cargando productos...</div>
+            <div class="productos-grid" id="grid-productos"></div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>

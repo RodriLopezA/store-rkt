@@ -17,17 +17,17 @@
                 <a class="nav-link" href="#inicio">Inicio</a>
                 <div class="dropdown-menu">
                     <a href="#destacados">Productos destacados</a>
-                    <a href="#catalogo">Catalogo</a>
-                    <button type="button" data-categoria="todo">Todo</button>
-                    <button type="button" data-categoria="conjuntos">Conjuntos</button>
-                    <button type="button" data-categoria="buzos">Buzos</button>
-                    <button type="button" data-categoria="joggings">Joggings</button>
+                    <a href="catalogo.html">Catalogo</a>
+                    <a href="catalogo.html?categoria=todo">Todo</a>
+                    <a href="catalogo.html?categoria=conjuntos">Conjuntos</a>
+                    <a href="catalogo.html?categoria=buzos">Buzos</a>
+                    <a href="catalogo.html?categoria=joggings">Joggings</a>
                     <a href="#ofertas">Ofertas</a>
                     <a href="#cambios">Cambios y devoluciones</a>
                     <a href="#contacto">Contacto</a>
                 </div>
             </div>
-            <a class="nav-link" href="#catalogo">Catalogo</a>
+            <a class="nav-link" href="catalogo.html">Catalogo</a>
             <a class="nav-link" href="#ofertas">Ofertas</a>
             <a class="nav-link" href="#cambios">Cambios y devoluciones</a>
             <a class="nav-link" href="#contacto">Contacto</a>
@@ -42,17 +42,17 @@
                 <a class="nav-link" href="#inicio">Inicio</a>
                 <div class="dropdown-menu">
                     <a href="#destacados">Productos destacados</a>
-                    <a href="#catalogo">Catalogo</a>
-                    <button type="button" data-categoria="todo">Todo</button>
-                    <button type="button" data-categoria="conjuntos">Conjuntos</button>
-                    <button type="button" data-categoria="buzos">Buzos</button>
-                    <button type="button" data-categoria="joggings">Joggings</button>
+                    <a href="catalogo.html">Catalogo</a>
+                    <a href="catalogo.html?categoria=todo">Todo</a>
+                    <a href="catalogo.html?categoria=conjuntos">Conjuntos</a>
+                    <a href="catalogo.html?categoria=buzos">Buzos</a>
+                    <a href="catalogo.html?categoria=joggings">Joggings</a>
                     <a href="#ofertas">Ofertas</a>
                     <a href="#cambios">Cambios y devoluciones</a>
                     <a href="#contacto">Contacto</a>
                 </div>
             </div>
-            <a class="nav-link" href="#catalogo">Catalogo</a>
+            <a class="nav-link" href="catalogo.html">Catalogo</a>
             <a class="nav-link" href="#ofertas">Ofertas</a>
             <a class="nav-link" href="#cambios">Cambios y devoluciones</a>
             <a class="nav-link" href="#contacto">Contacto</a>
@@ -64,59 +64,18 @@
         <div class="hero-overlay"></div>
         <div class="hero-content">
             <div class="hero-logo">URBAN<br>RKT</div>
-            <a class="hero-btn" href="#catalogo">Ver catalogo</a>
+            <a class="hero-btn" href="catalogo.html">Ver catalogo</a>
         </div>
     </section>
 
     <section class="featured-section" id="destacados">
         <div class="section-heading">
-            <span>Seleccion urbana</span>
-            <h2>Productos destacados</h2>
+            <h2>Novedades</h2>
+            <p>Nuestros ultimos ingresos, conjuntos y nuevos drops.</p>
         </div>
         <div id="loading-destacados" class="mensaje-alerta">Cargando destacados...</div>
         <div class="productos-grid destacados-grid" id="grid-destacados"></div>
     </section>
-
-    <main class="catalog-shell" id="catalogo">
-        <aside class="filters-panel" aria-label="Filtros">
-            <select id="orden-productos" class="sort-select" aria-label="Ordenar productos">
-                <option value="relevantes">Mas relevantes</option>
-                <option value="menor-precio">Menor precio</option>
-                <option value="mayor-precio">Mayor precio</option>
-                <option value="nombre">Nombre</option>
-            </select>
-
-            <label class="switch-row">
-                <span>Retiro por sucursal</span>
-                <input type="checkbox">
-                <i></i>
-            </label>
-
-            <label class="switch-row">
-                <span>Envio a domicilio</span>
-                <input type="checkbox" checked>
-                <i></i>
-            </label>
-
-            <button class="filter-accordion active" data-categoria="todo">Categoria de producto</button>
-            <button class="filter-accordion" data-categoria="conjuntos">Conjuntos</button>
-            <button class="filter-accordion" data-categoria="buzos">Buzos / Camperas</button>
-            <button class="filter-accordion" data-categoria="joggings">Joggings / Pantalones</button>
-            <button class="filter-accordion">Talle</button>
-            <button class="filter-accordion">Precio</button>
-            <button class="filter-accordion">Color</button>
-        </aside>
-
-        <section class="catalog-content">
-            <div class="catalog-toolbar">
-                <h2>Catalogo</h2>
-                <p><strong id="contador-productos">0</strong> resultados</p>
-            </div>
-
-            <div id="loading" class="mensaje-alerta">Cargando productos...</div>
-            <div class="productos-grid" id="grid-productos"></div>
-        </section>
-    </main>
 
     <section class="info-section ofertas-section" id="ofertas">
         <div>
@@ -124,7 +83,7 @@
             <h2>Promos urbanas por tiempo limitado.</h2>
             <p>Publica precios especiales desde el panel y destacalos en el catalogo.</p>
         </div>
-        <a href="#catalogo">Ver productos</a>
+        <a href="catalogo.html">Ver productos</a>
     </section>
 
     <section class="info-section" id="cambios">
