@@ -69,6 +69,7 @@
             <div class="grupo-input">
                 <label>PRECIO ($)</label>
                 <input type="number" id="precio" placeholder="Ej: 32000" required>
+                <small class="precio-preview" id="precio-preview">$ 0</small>
             </div>
 
             <div class="grupo-input">
@@ -82,8 +83,22 @@
             </div>
 
             <div class="grupo-input">
-                <label>TALLES DISPONIBLES (Separados por coma)</label>
-                <input type="text" id="talles" placeholder="Ej: S, M, L, XL" value="S, M, L, XL" required>
+                <label>TALLES DISPONIBLES</label>
+                <input type="hidden" id="talles" value="XS, S, M, L, XL" required>
+                <div class="talles-selector" id="talles-selector" aria-label="Seleccionar talles disponibles">
+                    <button type="button" class="selected" data-talle="XS">XS</button>
+                    <button type="button" class="selected" data-talle="S">S</button>
+                    <button type="button" class="selected" data-talle="M">M</button>
+                    <button type="button" class="selected" data-talle="L">L</button>
+                    <button type="button" class="selected" data-talle="XL">XL</button>
+                    <button type="button" data-talle="XXL">XXL</button>
+                    <button type="button" data-talle="U">U</button>
+                    <button type="button" data-talle="38">38</button>
+                    <button type="button" data-talle="40">40</button>
+                    <button type="button" data-talle="42">42</button>
+                    <button type="button" data-talle="44">44</button>
+                </div>
+                <small class="input-ayuda" id="talles-preview">Seleccionados: XS, S, M, L, XL</small>
             </div>
 
             <div class="grupo-input">

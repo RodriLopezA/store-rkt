@@ -218,6 +218,60 @@ function configurarPreviewFotos() {
     });
 }
 
+function actualizarPrecioPreview() {
+    const inputPrecio = document.getElementById('precio');
+    const previewPrecio = document.getElementById('precio-preview');
+    if (!inputPrecio || !previewPrecio) return;
+
+    const precio = Number(inputPrecio.value || 0);
+    previewPrecio.innerText = precio > 0
+        ? `$ ${precio.toLocaleString('es-AR')}`
+        : '$ 0';
+}
+
+function configurarPrecioPreview() {
+    const inputPrecio = document.getElementById('precio');
+    if (!inputPrecio) return;
+
+    inputPrecio.addEventListener('input', actualizarPrecioPreview);
+    actualizarPrecioPreview();
+}
+
+function sincronizarTallesSeleccionados() {
+    const inputTalles = document.getElementById('talles');
+    const previewTalles = document.getElementById('talles-preview');
+    const talles = Array.from(document.querySelectorAll('#talles-selector button.selected'))
+        .map((boton) => boton.dataset.talle);
+
+    inputTalles.value = talles.join(', ');
+    previewTalles.innerText = talles.length
+        ? `Seleccionados: ${talles.join(', ')}`
+        : 'Selecciona al menos un talle';
+}
+
+function configurarTallesSelector() {
+    const selector = document.getElementById('talles-selector');
+    if (!selector) return;
+
+    selector.addEventListener('click', (event) => {
+        const boton = event.target.closest('button');
+        if (!boton) return;
+
+        boton.classList.toggle('selected');
+        sincronizarTallesSeleccionados();
+    });
+
+    sincronizarTallesSeleccionados();
+}
+
+function resetearControlesGuiados() {
+    document.querySelectorAll('#talles-selector button').forEach((boton) => {
+        boton.classList.toggle('selected', ['XS', 'S', 'M', 'L', 'XL'].includes(boton.dataset.talle));
+    });
+    sincronizarTallesSeleccionados();
+    actualizarPrecioPreview();
+}
+
 async function cargarProductosAdmin() {
     productosAdmin.innerHTML = Array.from({ length: 4 }, () => `
         <article class="admin-producto admin-producto-skeleton" aria-hidden="true">
@@ -397,6 +451,10 @@ form.addEventListener('submit', async (e) => {
             throw new Error(`Selecciona como maximo ${MAX_FOTOS_PRODUCTO} fotos por producto.`);
         }
 
+        if (!talles.trim()) {
+            throw new Error("Selecciona al menos un talle disponible.");
+        }
+
         const urlsFotos = [];
 
         for (const [index, fotoArchivo] of fotosArchivos.entries()) {
@@ -450,6 +508,7 @@ form.addEventListener('submit', async (e) => {
 
         alert("Prenda publicada con exito.");
         form.reset();
+        resetearControlesGuiados();
         limpiarPreviewFotos();
         await cargarProductosAdmin();
 
@@ -463,4 +522,6 @@ form.addEventListener('submit', async (e) => {
 });
 
 configurarPreviewFotos();
+configurarPrecioPreview();
+configurarTallesSelector();
 verificarSesion();

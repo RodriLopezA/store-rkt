@@ -1951,6 +1951,38 @@ body.cart-open .cart-backdrop {
     font-weight: 700;
 }
 
+.precio-preview {
+    margin-top: 7px;
+    color: #287338;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.talles-selector {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.talles-selector button {
+    min-height: 48px;
+    border: 2px solid #000000;
+    background: #ffffff;
+    color: #050505;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.talles-selector button.selected {
+    background: #050505;
+    color: #ffffff;
+}
+
+.talles-selector button.selected::after {
+    content: " ✓";
+    color: #c8ff00;
+}
+
 .preview-fotos {
     margin-top: 12px;
     display: grid;
@@ -2322,6 +2354,10 @@ body.cart-open .cart-backdrop {
 
     .admin-metricas {
         grid-template-columns: 1fr;
+    }
+
+    .talles-selector {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .admin-producto {
