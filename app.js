@@ -16,20 +16,76 @@ let cargandoProductos = false;
 async function obtenerProductos() {
     const loading = document.getElementById('loading');
     const loadingDestacados = document.getElementById('loading-destacados');
+    const detalleProducto = document.getElementById('producto-detalle');
 
-    if (document.getElementById('producto-detalle')) {
+    if (detalleProducto) {
+        mostrarSkeletonDetalle(detalleProducto);
         await obtenerProductoDetalle();
         return;
     }
 
     if (loadingDestacados && !loading) {
+        mostrarSkeletonProductos(loadingDestacados, 4, true);
         await obtenerProductosDestacados();
         return;
     }
 
     if (loading) {
+        mostrarSkeletonProductos(loading, PRODUCTOS_POR_PAGINA);
         await cargarPaginaProductos({ reiniciar: true });
     }
+}
+
+function mostrarSkeletonProductos(contenedor, cantidad = 8, destacados = false) {
+    if (!contenedor) return;
+
+    contenedor.style.display = 'grid';
+    contenedor.className = destacados ? 'skeleton-grid skeleton-grid-4' : 'skeleton-grid';
+    contenedor.innerHTML = Array.from({ length: cantidad }, () => `
+        <article class="skeleton-card" aria-hidden="true">
+            <div class="skeleton-img skeleton-shine"></div>
+            <div class="skeleton-body">
+                <span class="skeleton-line skeleton-line-wide skeleton-shine"></span>
+                <span class="skeleton-line skeleton-line-short skeleton-shine"></span>
+                <span class="skeleton-price skeleton-shine"></span>
+                <span class="skeleton-line skeleton-line-mini skeleton-shine"></span>
+            </div>
+        </article>
+    `).join('');
+}
+
+function mostrarSkeletonDetalle(contenedor) {
+    if (!contenedor) return;
+
+    contenedor.classList.add('producto-detalle-skeleton');
+    contenedor.innerHTML = `
+        <section class="skeleton-detail-media" aria-hidden="true">
+            <div class="skeleton-detail-image skeleton-shine"></div>
+            <div class="skeleton-thumbs">
+                <span class="skeleton-thumb skeleton-shine"></span>
+                <span class="skeleton-thumb skeleton-shine"></span>
+            </div>
+        </section>
+        <section class="skeleton-detail-info" aria-hidden="true">
+            <span class="skeleton-pill skeleton-shine"></span>
+            <span class="skeleton-title skeleton-shine"></span>
+            <span class="skeleton-line skeleton-line-short skeleton-shine"></span>
+            <span class="skeleton-detail-price skeleton-shine"></span>
+            <span class="skeleton-line skeleton-line-wide skeleton-shine"></span>
+            <span class="skeleton-line skeleton-line-wide skeleton-shine"></span>
+            <span class="skeleton-line skeleton-line-short skeleton-shine"></span>
+            <span class="skeleton-select skeleton-shine"></span>
+            <span class="skeleton-button skeleton-shine"></span>
+        </section>
+    `;
+}
+
+function mostrarMensajeCarga(contenedor, mensaje) {
+    if (!contenedor) return;
+
+    contenedor.className = 'mensaje-alerta';
+    contenedor.style.display = 'block';
+    contenedor.innerText = mensaje;
 }
 
 async function obtenerProductosDestacados() {
@@ -43,7 +99,7 @@ async function obtenerProductosDestacados() {
 
     if (error) {
         console.error("Error cargando productos:", error);
-        if (loadingDestacados) loadingDestacados.innerText = "No se pudieron cargar los destacados.";
+        mostrarMensajeCarga(loadingDestacados, "No se pudieron cargar los destacados.");
         return;
     }
 
@@ -84,7 +140,7 @@ async function cargarPaginaProductos({ reiniciar = false } = {}) {
 
     if (error) {
         console.error("Error cargando productos:", error);
-        if (loading) loading.innerText = "No se pudieron cargar los productos.";
+        mostrarMensajeCarga(loading, "No se pudieron cargar los productos.");
         if (btnVerMas) {
             btnVerMas.disabled = false;
             btnVerMas.innerText = "Ver mas";
@@ -261,6 +317,7 @@ function obtenerUrlProducto(prod) {
 
 function renderizarDetalleProducto() {
     const contenedor = document.getElementById('producto-detalle');
+    contenedor.classList.remove('producto-detalle-skeleton');
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
     const nombre = params.get('nombre');

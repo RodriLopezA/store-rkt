@@ -104,7 +104,18 @@ function obtenerPathStorage(imagenUrl) {
 }
 
 async function cargarProductosAdmin() {
-    productosAdmin.innerHTML = '<p class="mensaje-alerta">Cargando productos...</p>';
+    productosAdmin.innerHTML = Array.from({ length: 4 }, () => `
+        <article class="admin-producto admin-producto-skeleton" aria-hidden="true">
+            <span class="admin-skeleton-img skeleton-shine"></span>
+            <div>
+                <span class="skeleton-line skeleton-line-wide skeleton-shine"></span>
+                <span class="skeleton-line skeleton-line-short skeleton-shine"></span>
+                <span class="skeleton-line skeleton-line-mini skeleton-shine"></span>
+            </div>
+            <span class="admin-skeleton-btn skeleton-shine"></span>
+            <span class="admin-skeleton-btn skeleton-shine"></span>
+        </article>
+    `).join('');
 
     const { data, error } = await supabaseClient
         .from('productos')
