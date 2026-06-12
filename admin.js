@@ -131,6 +131,34 @@ function escaparAtributo(valor) {
         .replace(/>/g, '&gt;');
 }
 
+function normalizarCategoria(categoria) {
+    return String(categoria || 'sin categoria').trim().toLowerCase();
+}
+
+function renderizarMetricas(productos) {
+    const activas = productos.filter((prod) => prod.stock !== false);
+    const categorias = activas.reduce((acc, prod) => {
+        const categoria = normalizarCategoria(prod.categoria);
+        acc[categoria] = (acc[categoria] || 0) + 1;
+        return acc;
+    }, {});
+
+    const categoriaFuerte = Object.entries(categorias)
+        .sort((a, b) => b[1] - a[1])[0];
+    const remerasRecientes = productos
+        .filter((prod) => normalizarCategoria(prod.categoria) === 'remeras')
+        .slice(0, 5);
+
+    document.getElementById('metrica-activas').innerText = activas.length;
+    document.getElementById('metrica-categoria').innerText = categoriaFuerte
+        ? `${categoriaFuerte[0]} (${categoriaFuerte[1]})`
+        : '-';
+    document.getElementById('metrica-remeras').innerText = remerasRecientes.length;
+    document.getElementById('metrica-remeras-lista').innerText = remerasRecientes.length
+        ? remerasRecientes.map((prod) => prod.nombre).join(', ')
+        : 'Sin remeras recientes';
+}
+
 async function cargarProductosAdmin() {
     productosAdmin.innerHTML = Array.from({ length: 4 }, () => `
         <article class="admin-producto admin-producto-skeleton" aria-hidden="true">
@@ -155,6 +183,8 @@ async function cargarProductosAdmin() {
         productosAdmin.innerHTML = '<p class="mensaje-alerta">No se pudieron cargar los productos.</p>';
         return;
     }
+
+    renderizarMetricas(data || []);
 
     if (!data.length) {
         productosAdmin.innerHTML = '<p class="mensaje-alerta">Todavia no hay productos cargados.</p>';

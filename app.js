@@ -4,6 +4,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const NUMERO_WSP = "549221XXXXXXX";
 const PRODUCTOS_POR_PAGINA = 12;
+const CARRITO_KEY = "urban_rkt_carrito";
 
 let productosData = [];
 let categoriaActiva = "todo";
@@ -86,6 +87,204 @@ function mostrarMensajeCarga(contenedor, mensaje) {
     contenedor.className = 'mensaje-alerta';
     contenedor.style.display = 'block';
     contenedor.innerText = mensaje;
+}
+
+function leerCarrito() {
+    try {
+        return JSON.parse(localStorage.getItem(CARRITO_KEY)) || [];
+    } catch (error) {
+        return [];
+    }
+}
+
+function guardarCarrito(items) {
+    localStorage.setItem(CARRITO_KEY, JSON.stringify(items));
+    renderizarCarrito();
+}
+
+function calcularTotalCarrito(items = leerCarrito()) {
+    return items.reduce((total, item) => total + (Number(item.precio || 0) * Number(item.cantidad || 1)), 0);
+}
+
+function crearCarritoUI() {
+    if (document.getElementById('cart-drawer')) return;
+
+    document.body.insertAdjacentHTML('beforeend', `
+        <button class="cart-fab" type="button" id="cart-open" aria-label="Abrir carrito">
+            <span>Carrito</span>
+            <strong id="cart-count">0</strong>
+        </button>
+
+        <aside class="cart-drawer" id="cart-drawer" aria-hidden="true">
+            <div class="cart-head">
+                <div>
+                    <span>Tu compra</span>
+                    <strong>Carrito</strong>
+                </div>
+                <button type="button" id="cart-close" aria-label="Cerrar carrito">×</button>
+            </div>
+
+            <div class="cart-items" id="cart-items"></div>
+
+            <form class="checkout-form" id="checkout-form">
+                <label>
+                    Nombre
+                    <input type="text" id="checkout-nombre" placeholder="Tu nombre" required>
+                </label>
+                <label>
+                    Envio o retiro
+                    <select id="checkout-envio">
+                        <option value="Envio a domicilio">Envio a domicilio</option>
+                        <option value="Retiro coordinado">Retiro coordinado</option>
+                    </select>
+                </label>
+                <label>
+                    Zona / direccion
+                    <input type="text" id="checkout-direccion" placeholder="Barrio, ciudad o direccion">
+                </label>
+                <label>
+                    Comentario
+                    <input type="text" id="checkout-nota" placeholder="Horario, referencia, consulta">
+                </label>
+
+                <div class="cart-total">
+                    <span>Total</span>
+                    <strong id="cart-total">$0</strong>
+                </div>
+
+                <button class="checkout-btn" type="submit">Finalizar compra por WhatsApp</button>
+            </form>
+        </aside>
+
+        <div class="cart-backdrop" id="cart-backdrop"></div>
+    `);
+
+    document.getElementById('cart-open').addEventListener('click', abrirCarrito);
+    document.getElementById('cart-close').addEventListener('click', cerrarCarrito);
+    document.getElementById('cart-backdrop').addEventListener('click', cerrarCarrito);
+    document.getElementById('checkout-form').addEventListener('submit', finalizarCompraWhatsApp);
+    document.getElementById('cart-items').addEventListener('click', manejarClickCarrito);
+    renderizarCarrito();
+}
+
+function abrirCarrito() {
+    document.body.classList.add('cart-open');
+    document.getElementById('cart-drawer')?.setAttribute('aria-hidden', 'false');
+}
+
+function cerrarCarrito() {
+    document.body.classList.remove('cart-open');
+    document.getElementById('cart-drawer')?.setAttribute('aria-hidden', 'true');
+}
+
+function renderizarCarrito() {
+    const items = leerCarrito();
+    const contenedor = document.getElementById('cart-items');
+    const contador = document.getElementById('cart-count');
+    const total = document.getElementById('cart-total');
+
+    if (contador) {
+        contador.innerText = items.reduce((acc, item) => acc + Number(item.cantidad || 1), 0);
+    }
+
+    if (total) {
+        total.innerText = `$${calcularTotalCarrito(items).toLocaleString('es-AR')}`;
+    }
+
+    if (!contenedor) return;
+
+    if (!items.length) {
+        contenedor.innerHTML = '<p class="cart-empty">Todavia no agregaste prendas.</p>';
+        return;
+    }
+
+    contenedor.innerHTML = items.map((item) => `
+        <article class="cart-item">
+            <img src="${escaparAtributo(item.imagen || '')}" alt="${escaparAtributo(item.nombre)}">
+            <div>
+                <strong>${item.nombre}</strong>
+                <span>Talle: ${item.talle || 'U'}${item.color ? ` · ${item.color}` : ''}</span>
+                <small>$${Number(item.precio || 0).toLocaleString('es-AR')} c/u</small>
+                <div class="cart-qty">
+                    <button type="button" data-accion="menos" data-key="${escaparAtributo(item.key)}">−</button>
+                    <b>${item.cantidad}</b>
+                    <button type="button" data-accion="mas" data-key="${escaparAtributo(item.key)}">+</button>
+                    <button type="button" data-accion="eliminar" data-key="${escaparAtributo(item.key)}">Quitar</button>
+                </div>
+            </div>
+        </article>
+    `).join('');
+}
+
+function agregarAlCarrito(producto) {
+    const items = leerCarrito();
+    const key = `${producto.id || generarSku(producto.nombre)}-${generarSku(producto.talle || 'U')}-${generarSku(producto.color || '')}`;
+    const existente = items.find((item) => item.key === key);
+
+    if (existente) {
+        existente.cantidad += Number(producto.cantidad || 1);
+    } else {
+        items.push({
+            key,
+            id: producto.id,
+            nombre: producto.nombre,
+            precio: Number(producto.precio || 0),
+            talle: producto.talle || 'U',
+            color: producto.color || '',
+            cantidad: Number(producto.cantidad || 1),
+            imagen: producto.imagen || ''
+        });
+    }
+
+    guardarCarrito(items);
+    abrirCarrito();
+}
+
+function manejarClickCarrito(event) {
+    const boton = event.target.closest('button');
+    if (!boton) return;
+
+    const items = leerCarrito();
+    const item = items.find((prod) => prod.key === boton.dataset.key);
+    if (!item) return;
+
+    if (boton.dataset.accion === 'mas') {
+        item.cantidad += 1;
+    }
+
+    if (boton.dataset.accion === 'menos') {
+        item.cantidad -= 1;
+    }
+
+    const actualizados = boton.dataset.accion === 'eliminar' || item.cantidad <= 0
+        ? items.filter((prod) => prod.key !== item.key)
+        : items;
+
+    guardarCarrito(actualizados);
+}
+
+function finalizarCompraWhatsApp(event) {
+    event.preventDefault();
+
+    const items = leerCarrito();
+    if (!items.length) {
+        alert("Agrega al menos una prenda al carrito.");
+        return;
+    }
+
+    const nombre = document.getElementById('checkout-nombre').value.trim();
+    const envio = document.getElementById('checkout-envio').value;
+    const direccion = document.getElementById('checkout-direccion').value.trim();
+    const nota = document.getElementById('checkout-nota').value.trim();
+    const total = calcularTotalCarrito(items);
+    const resumen = items.map((item, index) => {
+        const subtotal = Number(item.precio || 0) * Number(item.cantidad || 1);
+        const color = item.color ? `\n   Color/detalle: ${item.color}` : '';
+        return `${index + 1}. ${item.nombre}\n   Talle: ${item.talle || 'U'}${color}\n   Cantidad: ${item.cantidad}\n   Precio: $${Number(item.precio || 0).toLocaleString('es-AR')}\n   Subtotal: $${subtotal.toLocaleString('es-AR')}`;
+    }).join('\n\n');
+
+    const mensaje = `Hola. Quiero finalizar esta compra:\n\n${resumen}\n\nTotal estimado: $${total.toLocaleString('es-AR')}\n\nDatos del cliente:\nNombre: ${nombre}\nMetodo: ${envio}\nZona/direccion: ${direccion || 'A coordinar'}\nComentario: ${nota || 'Sin comentario'}\n\nMe confirman disponibilidad y envio?`;
+    window.open(`https://wa.me/${NUMERO_WSP}?text=${encodeURIComponent(mensaje)}`, '_blank');
 }
 
 async function obtenerProductosDestacados() {
@@ -226,6 +425,14 @@ function obtenerListaTexto(valor) {
         .filter(Boolean);
 }
 
+function escaparAtributo(valor) {
+    return String(valor || '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
 function aplicarFiltros() {
     let lista = [...productosData];
 
@@ -309,6 +516,11 @@ function renderizarCards(lista, grid) {
         const card = document.createElement('article');
         card.className = 'producto-card';
         card.tabIndex = 0;
+        card.dataset.id = prod.id || '';
+        card.dataset.nombre = prod.nombre || '';
+        card.dataset.precio = precio;
+        card.dataset.imagen = imagenes[0] || prod.imagen_url || '';
+        card.dataset.color = colores[0] || '';
         card.innerHTML = `
             <div class="img-contenedor">
                 <span class="badge-rkt ${prod.stock === false ? 'agotado' : ''}">${prod.stock === false ? 'Agotado' : 'Nuevo ingreso'}</span>
@@ -335,8 +547,8 @@ function renderizarCards(lista, grid) {
                     <span class="stock-badge">${prod.stock === false ? 'Sin stock' : 'Stock disponible'}</span>
                 </div>
                 <div class="talles-grid">${tallesHTML}</div>
-                <button class="btn-wsp" ${prod.stock === false ? 'disabled' : ''} onclick="enviarPedido('${escaparTexto(prod.nombre)}', '${precio}', this)">
-                    ${prod.stock === false ? 'Agotado' : 'Consultar por WhatsApp'}
+                <button class="btn-wsp" ${prod.stock === false ? 'disabled' : ''} onclick="agregarProductoDesdeCard(this)">
+                    ${prod.stock === false ? 'Agotado' : 'Agregar al carrito'}
                 </button>
             </div>
         `;
@@ -571,9 +783,17 @@ function configurarDetalleAcciones(producto, precio) {
         const talle = document.getElementById('detalle-talle').value;
         const color = document.getElementById('detalle-color')?.value;
         const cantidad = cantidadValor.innerText;
-        const colorTexto = color ? `\nColor/detalle: ${color}` : '';
-        const textoMensaje = `Hola. Quiero consultar por este producto:\n\nProducto: ${producto.nombre}\nTalle: ${talle}${colorTexto}\nCantidad: ${cantidad}\nPrecio: $${Number(precio).toLocaleString('es-AR')}\n\nSigue disponible?`;
-        window.open(`https://wa.me/${NUMERO_WSP}?text=${encodeURIComponent(textoMensaje)}`, '_blank');
+        const imagenes = obtenerImagenesProducto(producto);
+
+        agregarAlCarrito({
+            id: producto.id,
+            nombre: producto.nombre,
+            precio,
+            talle,
+            color,
+            cantidad,
+            imagen: imagenes[0] || producto.imagen_url
+        });
     });
 }
 
@@ -655,14 +875,32 @@ function seleccionarTalle(boton) {
     boton.classList.add('selected');
 }
 
+function agregarProductoDesdeCard(boton) {
+    const tarjeta = boton.closest('.producto-card');
+    const talleSeleccionado = tarjeta.querySelector('.talle-btn.selected').innerText;
+
+    agregarAlCarrito({
+        id: tarjeta.dataset.id,
+        nombre: tarjeta.dataset.nombre,
+        precio: tarjeta.dataset.precio,
+        talle: talleSeleccionado,
+        color: tarjeta.dataset.color,
+        cantidad: 1,
+        imagen: tarjeta.dataset.imagen
+    });
+}
+
 function enviarPedido(nombre, precio, boton) {
     const tarjeta = boton.closest('.producto-card');
     const talleSeleccionado = tarjeta.querySelector('.talle-btn.selected').innerText;
 
-    const textoMensaje = `Hola. Vi este producto en la web y me interesa comprarlo:\n\nProducto: ${nombre}\nTalle: ${talleSeleccionado}\nPrecio: $${Number(precio).toLocaleString('es-AR')}\n\nSigue disponible?`;
-
-    const urlWsp = `https://wa.me/${NUMERO_WSP}?text=${encodeURIComponent(textoMensaje)}`;
-    window.open(urlWsp, '_blank');
+    agregarAlCarrito({
+        nombre,
+        precio,
+        talle: talleSeleccionado,
+        cantidad: 1,
+        imagen: tarjeta.dataset.imagen
+    });
 }
 
 function configurarFiltros() {
@@ -728,6 +966,7 @@ function configurarHeaderScroll() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    crearCarritoUI();
     configurarHeaderScroll();
     configurarFiltros();
     obtenerProductos();
