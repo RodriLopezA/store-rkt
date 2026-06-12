@@ -1,6 +1,9 @@
 const SUPABASE_URL = "TU_SUPABASE_URL";
 const SUPABASE_KEY = "TU_SUPABASE_ANON_KEY";
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+if (!window.supabase) {
+    alert("No se pudo cargar Supabase. Revisa la conexion a internet o el CDN en admin.html.");
+}
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const form = document.getElementById('form-panel');
 const PESO_MAXIMO_IMAGEN = 100 * 1024; // 100KB
@@ -89,7 +92,7 @@ form.addEventListener('submit', async (e) => {
         const nombreImagen = `${Date.now()}-${nombreBase || 'producto'}.jpg`;
 
         btn.innerText = "Subiendo ropa...";
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabaseClient.storage
             .from('fotos-ropa')
             .upload(nombreImagen, fotoComprimida, {
                 contentType: 'image/jpeg',
@@ -98,13 +101,13 @@ form.addEventListener('submit', async (e) => {
 
         if (uploadError) throw uploadError;
 
-        const { data: urlData } = supabase.storage
+        const { data: urlData } = supabaseClient.storage
             .from('fotos-ropa')
             .getPublicUrl(nombreImagen);
 
         const urlFinalImagen = urlData.publicUrl;
 
-        const { error: dbError } = await supabase
+        const { error: dbError } = await supabaseClient
             .from('productos')
             .insert([
                 {
