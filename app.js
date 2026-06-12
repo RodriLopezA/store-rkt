@@ -618,6 +618,19 @@ function renderizarCards(lista, grid) {
         const alertaStock = obtenerAlertaStock(prod);
         const colores = obtenerListaTexto(prod.colores);
         const precio = Number(prod.precio || 0);
+        const descuentoPorcentaje = Math.max(0, Number(prod.descuento_porcentaje || 0));
+        const precioAnterior = Number(prod.precio_anterior || 0);
+        const tieneDescuento = descuentoPorcentaje > 0 || precioAnterior > precio;
+        const precioAnteriorFinal = precioAnterior > precio
+            ? precioAnterior
+            : descuentoPorcentaje > 0
+            ? Math.round(precio / (1 - descuentoPorcentaje / 100))
+            : 0;
+        const descuentoFinal = descuentoPorcentaje > 0
+            ? descuentoPorcentaje
+            : precioAnteriorFinal > precio
+            ? Math.round(100 - (precio * 100 / precioAnteriorFinal))
+            : 0;
 
         const tallesHTML = talles.map((t, index) =>
             `<button class="talle-btn ${index === 0 ? 'selected' : ''}" onclick="seleccionarTalle(this)">${t.trim()}</button>`
@@ -640,6 +653,18 @@ function renderizarCards(lista, grid) {
         const alertaStockHTML = alertaStock && prod.stock !== false
             ? `<span class="stock-alerta">${alertaStock}</span>`
             : '';
+        const badgeHTML = prod.stock === false
+            ? '<span class="badge-rkt agotado">Agotado</span>'
+            : prod.nuevo_ingreso === false
+            ? ''
+            : '<span class="badge-rkt">Nuevo ingreso</span>';
+        const descuentoHTML = tieneDescuento
+            ? `<div class="prod-price-row">
+                    <span class="prod-precio">$${precio.toLocaleString('es-AR')}</span>
+                    <span class="discount-pill">-${descuentoFinal}%</span>
+               </div>
+               <span class="prod-precio-anterior">$${precioAnteriorFinal.toLocaleString('es-AR')}</span>`
+            : `<span class="prod-precio">$${precio.toLocaleString('es-AR')}</span>`;
 
         const card = document.createElement('article');
         card.className = 'producto-card';
@@ -651,8 +676,7 @@ function renderizarCards(lista, grid) {
         card.dataset.color = colores[0] || '';
         card.innerHTML = `
             <div class="img-contenedor">
-                <span class="badge-rkt ${prod.stock === false ? 'agotado' : ''}">${prod.stock === false ? 'Agotado' : 'Nuevo ingreso'}</span>
-                <button class="fav-btn" type="button" aria-label="Agregar a favoritos">&hearts;</button>
+                ${badgeHTML}
                 <div class="card-slider" data-slide="0">
                     <div class="card-slider-track">
                         ${imagenesHTML}
@@ -670,7 +694,7 @@ function renderizarCards(lista, grid) {
                 <span class="prod-cat">${prod.categoria || 'Producto'}</span>
                 <h3 class="prod-nom">${prod.nombre}</h3>
                 ${variantesHTML}
-                <span class="prod-precio">$${precio.toLocaleString('es-AR')}</span>
+                ${descuentoHTML}
                 <div class="prod-badges">
                     <span class="stock-badge">${prod.stock === false ? 'Sin stock' : 'Stock disponible'}</span>
                 </div>
@@ -773,7 +797,13 @@ function renderizarDetalleProducto() {
     }
 
     const precio = Number(producto.precio || 0);
-    const precioAnterior = Math.round(precio * 1.25);
+    const descuentoPorcentaje = Math.max(0, Number(producto.descuento_porcentaje || 0));
+    const precioAnteriorGuardado = Number(producto.precio_anterior || 0);
+    const precioAnterior = precioAnteriorGuardado > precio
+        ? precioAnteriorGuardado
+        : descuentoPorcentaje > 0
+        ? Math.round(precio / (1 - descuentoPorcentaje / 100))
+        : 0;
     const imagenes = obtenerImagenesProducto(producto);
     const alertaStock = obtenerAlertaStock(producto);
     const talles = obtenerListaTexto(producto.talles).length ? obtenerListaTexto(producto.talles) : ['U'];
@@ -807,7 +837,7 @@ function renderizarDetalleProducto() {
 
             <div class="detalle-precios">
                 <strong>$${precio.toLocaleString('es-AR')}</strong>
-                <span>$${precioAnterior.toLocaleString('es-AR')}</span>
+                ${precioAnterior > precio ? `<span>$${precioAnterior.toLocaleString('es-AR')}</span>` : ''}
             </div>
 
             <p class="detalle-desc">

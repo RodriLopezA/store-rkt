@@ -255,20 +255,30 @@ function configurarPreviewFotos() {
 
 function actualizarPrecioPreview() {
     const inputPrecio = document.getElementById('precio');
+    const inputDescuento = document.getElementById('descuento');
     const previewPrecio = document.getElementById('precio-preview');
     if (!inputPrecio || !previewPrecio) return;
 
     const precio = Number(inputPrecio.value || 0);
-    previewPrecio.innerText = precio > 0
+    const descuento = Math.min(90, Math.max(0, Number(inputDescuento?.value || 0)));
+    const precioAnterior = descuento > 0
+        ? Math.round(precio / (1 - descuento / 100))
+        : 0;
+
+    previewPrecio.innerText = precio > 0 && descuento > 0
+        ? `$ ${precio.toLocaleString('es-AR')} con ${descuento}% OFF antes $ ${precioAnterior.toLocaleString('es-AR')}`
+        : precio > 0
         ? `$ ${precio.toLocaleString('es-AR')}`
         : '$ 0';
 }
 
 function configurarPrecioPreview() {
     const inputPrecio = document.getElementById('precio');
+    const inputDescuento = document.getElementById('descuento');
     if (!inputPrecio) return;
 
     inputPrecio.addEventListener('input', actualizarPrecioPreview);
+    inputDescuento?.addEventListener('input', actualizarPrecioPreview);
     actualizarPrecioPreview();
 }
 
@@ -303,6 +313,8 @@ function resetearControlesGuiados() {
     document.querySelectorAll('#talles-selector button').forEach((boton) => {
         boton.classList.toggle('selected', ['XS', 'S', 'M', 'L', 'XL'].includes(boton.dataset.talle));
     });
+    document.getElementById('descuento').value = '';
+    document.getElementById('nuevo-ingreso').checked = true;
     sincronizarTallesSeleccionados();
     actualizarPrecioPreview();
 }
@@ -362,6 +374,8 @@ function cargarProductoParaEditar(producto) {
     document.getElementById('precio').value = producto.precio || '';
     document.getElementById('categoria').value = producto.categoria || 'conjuntos';
     document.getElementById('colores').value = producto.colores || '';
+    document.getElementById('descuento').value = producto.descuento_porcentaje || '';
+    document.getElementById('nuevo-ingreso').checked = producto.nuevo_ingreso !== false;
 
     const talles = String(producto.talles || '')
         .split(',')
@@ -414,8 +428,10 @@ async function cargarProductosAdmin() {
         const imagenes = obtenerImagenesProducto(prod);
         const imagenPrincipal = imagenes[0] || prod.imagen_url || '';
         const detalleFotos = `${imagenes.length} foto${imagenes.length === 1 ? '' : 's'}`;
-        const detalleColores = prod.colores ? ` · ${prod.colores}` : '';
-
+        const detalleColores = prod.colores ? ` - ${prod.colores}` : '';
+        const detalleDescuento = Number(prod.descuento_porcentaje || 0) > 0 ? `-${Number(prod.descuento_porcentaje)}% OFF` : '';
+        const detalleIngreso = prod.nuevo_ingreso === false ? '' : 'Nuevo ingreso';
+        const detallePromo = [detalleDescuento, detalleIngreso].filter(Boolean).join(' - ');
         const disponible = prod.stock !== false;
 
         return `
@@ -423,8 +439,9 @@ async function cargarProductosAdmin() {
             <img src="${imagenPrincipal}" alt="${prod.nombre}">
             <div>
                 <strong>${prod.nombre}</strong>
-                <span>${prod.categoria || 'sin categoria'} · $${Number(prod.precio || 0).toLocaleString('es-AR')}</span>
+                <span>${prod.categoria || 'sin categoria'} - $${Number(prod.precio || 0).toLocaleString('es-AR')}</span>
                 <span>${detalleFotos}${detalleColores}</span>
+                ${detallePromo ? `<span>${detallePromo}</span>` : ''}
                 <small>${prod.stock === false ? 'SIN STOCK' : 'EN STOCK'}</small>
             </div>
             <button class="stock-switch ${disponible ? 'active' : ''}" type="button" data-accion="stock" data-id="${prod.id}" data-stock="${disponible ? 'false' : 'true'}">
@@ -523,6 +540,11 @@ form.addEventListener('submit', async (e) => {
 
     const nombre = document.getElementById('nombre').value;
     const precio = Number(document.getElementById('precio').value);
+    const descuentoPorcentaje = Math.min(90, Math.max(0, Number(document.getElementById('descuento').value || 0)));
+    const precioAnterior = descuentoPorcentaje > 0
+        ? Math.round(precio / (1 - descuentoPorcentaje / 100))
+        : null;
+    const nuevoIngreso = document.getElementById('nuevo-ingreso').checked;
     const categoria = document.getElementById('categoria').value;
     const talles = document.getElementById('talles').value;
     const colores = document.getElementById('colores').value;
@@ -590,6 +612,10 @@ form.addEventListener('submit', async (e) => {
             categoria,
             talles,
             colores,
+            descuento_porcentaje: descuentoPorcentaje,
+            descuento: descuentoPorcentaje > 0,
+            precio_anterior: precioAnterior,
+            nuevo_ingreso: nuevoIngreso,
             imagen_url: urlsFotos[0],
             imagenes_urls: urlsFotos,
             stock: productoEditando ? productoEditando.stock !== false : true

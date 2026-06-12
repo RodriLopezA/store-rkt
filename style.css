@@ -1599,6 +1599,39 @@ body.scrolled .hero-scroll-cue {
     font-weight: 800;
 }
 
+.prod-price-row {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.prod-price-row .prod-precio {
+    margin-top: 0;
+}
+
+.discount-pill {
+    min-height: 22px;
+    padding: 0 8px;
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    background: #20c861;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.prod-precio-anterior {
+    display: block;
+    margin-top: 4px;
+    color: #777777;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: line-through;
+}
+
 .prod-badges {
     margin-top: 6px;
     display: flex;
@@ -2452,6 +2485,26 @@ body.cart-open .cart-backdrop {
     margin-bottom: 20px;
     display: flex;
     flex-direction: column;
+}
+
+.admin-check-row {
+    min-height: 52px;
+    margin: -4px 0 20px;
+    padding: 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 2px solid #000000;
+    background: #f7f7f2;
+    color: #050505;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.admin-check-row input {
+    width: 20px;
+    height: 20px;
+    accent-color: #20c861;
 }
 
 .grupo-input label {
