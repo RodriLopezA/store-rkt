@@ -18,20 +18,14 @@
                 <a class="nav-link" href="#inicio">Inicio</a>
                 <div class="dropdown-menu">
                     <a href="#destacados">Productos destacados</a>
-                    <a href="catalogo.html">Catalogo</a>
+                    <a href="catalogo.html">Productos</a>
                     <a href="catalogo.html?categoria=todo">Todo</a>
                     <a href="catalogo.html?categoria=conjuntos">Conjuntos</a>
                     <a href="catalogo.html?categoria=buzos">Buzos</a>
                     <a href="catalogo.html?categoria=joggings">Joggings</a>
-                    <a href="#ofertas">Ofertas</a>
-                    <a href="#cambios">Cambios y devoluciones</a>
-                    <a href="#contacto">Contacto</a>
                 </div>
             </div>
-            <a class="nav-link" href="catalogo.html">Catalogo</a>
-            <a class="nav-link" href="#ofertas">Ofertas</a>
-            <a class="nav-link" href="#cambios">Cambios y devoluciones</a>
-            <a class="nav-link" href="#contacto">Contacto</a>
+            <a class="nav-link" href="catalogo.html">Productos</a>
         </nav>
         <a class="admin-link" href="admin.html">Admin</a>
     </header>
@@ -43,20 +37,14 @@
                 <a class="nav-link" href="#inicio">Inicio</a>
                 <div class="dropdown-menu">
                     <a href="#destacados">Productos destacados</a>
-                    <a href="catalogo.html">Catalogo</a>
+                    <a href="catalogo.html">Productos</a>
                     <a href="catalogo.html?categoria=todo">Todo</a>
                     <a href="catalogo.html?categoria=conjuntos">Conjuntos</a>
                     <a href="catalogo.html?categoria=buzos">Buzos</a>
                     <a href="catalogo.html?categoria=joggings">Joggings</a>
-                    <a href="#ofertas">Ofertas</a>
-                    <a href="#cambios">Cambios y devoluciones</a>
-                    <a href="#contacto">Contacto</a>
                 </div>
             </div>
-            <a class="nav-link" href="catalogo.html">Catalogo</a>
-            <a class="nav-link" href="#ofertas">Ofertas</a>
-            <a class="nav-link" href="#cambios">Cambios y devoluciones</a>
-            <a class="nav-link" href="#contacto">Contacto</a>
+            <a class="nav-link" href="catalogo.html">Productos</a>
         </nav>
         <a class="admin-link" href="admin.html">Admin</a>
     </header>
@@ -77,32 +65,46 @@
         </div>
         <div id="loading-destacados" class="mensaje-alerta">Cargando destacados...</div>
         <div class="productos-grid destacados-grid" id="grid-destacados"></div>
-    </section>
-
-    <section class="info-section ofertas-section" id="ofertas">
-        <div>
-            <span>Ofertas</span>
-            <h2>Promos urbanas por tiempo limitado.</h2>
-            <p>Publica precios especiales desde el panel y destacalos en el catalogo.</p>
-        </div>
-        <a href="catalogo.html">Ver productos</a>
-    </section>
-
-    <section class="info-section" id="cambios">
-        <div>
-            <span>Cambios y devoluciones</span>
-            <h2>Compra con confianza.</h2>
-            <p>Coordinamos cambios por talle o producto disponible. La prenda debe estar sin uso y con el mismo estado de entrega.</p>
+        <div class="featured-actions">
+            <a href="catalogo.html">Ver todos los productos</a>
         </div>
     </section>
 
-    <section class="info-section contacto-section" id="contacto">
-        <div>
-            <span>Contacto</span>
-            <h2>Atencion directa por WhatsApp.</h2>
-            <p>Consultas de talles, stock, retiros y envios. Respuesta clara antes de cerrar la compra.</p>
+    <section class="category-section" id="categorias">
+        <div class="section-heading">
+            <h2>Comprar por categoria</h2>
+            <p>Encontra exactamente lo que buscas</p>
         </div>
-        <a href="https://wa.me/549221XXXXXXX" target="_blank" rel="noopener">Escribir ahora</a>
+
+        <div class="category-grid">
+            <a class="category-card" href="catalogo.html?categoria=buzos">
+                <svg viewBox="0 0 220 220" aria-hidden="true">
+                    <path d="M68 66 L94 42 H126 L152 66 L177 84 L168 174 L140 174 L137 108 L83 108 L80 174 L52 174 L43 84 Z" />
+                    <path d="M94 42 L110 62 L126 42" />
+                </svg>
+                <strong>Buzos</strong>
+                <span>Comprar ahora <b>-></b></span>
+            </a>
+
+            <a class="category-card" href="catalogo.html?categoria=remeras">
+                <svg viewBox="0 0 220 220" aria-hidden="true">
+                    <path d="M78 58 L98 46 H122 L142 58 L178 92 L151 119 L136 104 L136 174 H84 L84 104 L69 119 L42 92 Z" />
+                    <path d="M98 46 Q110 62 122 46" />
+                </svg>
+                <strong>Remeras</strong>
+                <span>Comprar ahora <b>-></b></span>
+            </a>
+
+            <a class="category-card" href="catalogo.html?categoria=joggings">
+                <svg viewBox="0 0 220 220" aria-hidden="true">
+                    <path d="M74 44 H146 L156 178 H124 L112 88 L96 178 H64 Z" />
+                    <path d="M74 44 V68 H146 V44" />
+                    <path d="M94 44 V68 M126 44 V68 M110 44 V82" />
+                </svg>
+                <strong>Pantalones</strong>
+                <span>Comprar ahora <b>-></b></span>
+            </a>
+        </div>
     </section>
 
     <script src="app.js"></script>
