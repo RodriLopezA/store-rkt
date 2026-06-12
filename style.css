@@ -1858,7 +1858,7 @@ body.cart-open .cart-backdrop {
 
 .admin-producto {
     display: grid;
-    grid-template-columns: 72px 1fr auto auto;
+    grid-template-columns: minmax(230px, 1.4fr) minmax(100px, 0.5fr) minmax(150px, 0.7fr) minmax(150px, auto);
     gap: 12px;
     align-items: center;
     padding: 10px;
@@ -1870,7 +1870,16 @@ body.cart-open .cart-backdrop {
     opacity: 0.68;
 }
 
-.admin-producto img {
+.admin-producto-prenda {
+    min-width: 0;
+    display: grid;
+    grid-template-columns: 72px 1fr;
+    gap: 12px;
+    align-items: center;
+}
+
+.admin-producto img,
+.admin-producto-prenda img {
     width: 72px;
     height: 72px;
     object-fit: cover;
@@ -1883,6 +1892,16 @@ body.cart-open .cart-backdrop {
     display: block;
 }
 
+.admin-producto-precio {
+    font-size: 16px;
+    white-space: nowrap;
+}
+
+.admin-producto-stock {
+    display: grid;
+    gap: 7px;
+}
+
 .admin-producto span {
     color: #555555;
     font-size: 13px;
@@ -1893,8 +1912,25 @@ body.cart-open .cart-backdrop {
     font-weight: 900;
 }
 
+.admin-producto small.disponible {
+    color: #287338;
+}
+
+.admin-producto small.agotado {
+    color: #ff4343;
+}
+
+.admin-producto-acciones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
 .admin-producto button {
     min-height: 48px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     border: 0;
     padding: 0 14px;
     background: #000000;
@@ -1904,6 +1940,43 @@ body.cart-open .cart-backdrop {
 
 .admin-producto button[data-accion="borrar"] {
     background: #ff4343;
+}
+
+.stock-switch {
+    min-width: 148px;
+    justify-content: flex-start;
+    gap: 8px;
+    background: #b6b6b6 !important;
+    color: #ffffff;
+    font-size: 12px;
+}
+
+.stock-switch span {
+    width: 34px;
+    height: 20px;
+    position: relative;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.45);
+}
+
+.stock-switch span::before {
+    content: "";
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    border-radius: 50%;
+    background: #ffffff;
+    transition: transform 0.18s ease;
+}
+
+.stock-switch.active {
+    background: #287338 !important;
+}
+
+.stock-switch.active span::before {
+    transform: translateX(14px);
 }
 
 .admin-producto-skeleton {
@@ -2068,6 +2141,59 @@ body.cart-open .cart-backdrop {
 #btn-publicar:hover {
     background: #ccff00;
     color: #000000;
+}
+
+.admin-modal[hidden] {
+    display: none;
+}
+
+.admin-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.admin-modal-card {
+    width: min(420px, 100%);
+    padding: 24px;
+    border: 4px solid #000000;
+    background: #ffffff;
+    box-shadow: 8px 8px 0 #000000;
+}
+
+.admin-modal-card h2 {
+    font-size: 26px;
+    text-transform: uppercase;
+}
+
+.admin-modal-card p {
+    margin-top: 10px;
+    color: #444444;
+    font-weight: 700;
+}
+
+.admin-modal-actions {
+    margin-top: 22px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.admin-modal-actions button {
+    min-height: 52px;
+    border: 0;
+    background: #050505;
+    color: #ffffff;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.admin-modal-actions #btn-confirmar-borrar {
+    background: #ff4343;
 }
 
 @media (max-width: 1100px) {
@@ -2361,10 +2487,15 @@ body.cart-open .cart-backdrop {
     }
 
     .admin-producto {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-producto-prenda {
         grid-template-columns: 64px 1fr;
     }
 
-    .admin-producto img {
+    .admin-producto img,
+    .admin-producto-prenda img {
         width: 64px;
         height: 64px;
     }
@@ -2375,16 +2506,15 @@ body.cart-open .cart-backdrop {
     }
 
     .admin-producto button {
-        grid-column: auto;
         width: 100%;
     }
 
-    .admin-producto button[data-accion="stock"] {
-        grid-column: 1 / 2;
+    .admin-producto-stock {
+        grid-template-columns: 1fr;
     }
 
-    .admin-producto button[data-accion="borrar"] {
-        grid-column: 2 / 3;
+    .admin-producto-acciones {
+        grid-template-columns: 1fr 1fr;
     }
 
     .admin-skeleton-btn {

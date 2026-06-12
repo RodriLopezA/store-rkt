@@ -10,12 +10,18 @@ const form = document.getElementById('form-panel');
 const productosAdmin = document.getElementById('admin-productos');
 const inputFotos = document.getElementById('foto');
 const previewFotos = document.getElementById('preview-fotos');
+const modalBorrar = document.getElementById('modal-borrar');
+const btnConfirmarBorrar = document.getElementById('btn-confirmar-borrar');
+const btnCancelarBorrar = document.getElementById('btn-cancelar-borrar');
 
 const PESO_MAXIMO_IMAGEN = 100 * 1024;
 const ANCHO_MAXIMO_IMAGEN = 800;
 const CALIDAD_INICIAL_IMAGEN = 0.7;
 const MAX_FOTOS_PRODUCTO = 3;
 let fotosSeleccionadas = [];
+let productosAdminCache = [];
+let productoPendienteBorrar = null;
+let productoEditando = null;
 
 function mostrarEstado(mensaje) {
     const btn = document.getElementById('btn-publicar');
@@ -272,6 +278,76 @@ function resetearControlesGuiados() {
     actualizarPrecioPreview();
 }
 
+function abrirModalBorrar(producto) {
+    productoPendienteBorrar = producto;
+    modalBorrar.hidden = false;
+}
+
+function cerrarModalBorrar() {
+    productoPendienteBorrar = null;
+    modalBorrar.hidden = true;
+}
+
+async function borrarProductoConfirmado() {
+    if (!productoPendienteBorrar) return;
+
+    btnConfirmarBorrar.disabled = true;
+    btnConfirmarBorrar.innerText = "Eliminando...";
+
+    const { id, imagenes } = productoPendienteBorrar;
+    const pathsStorage = imagenes
+        .map((imagen) => obtenerPathStorage(imagen))
+        .filter(Boolean);
+
+    const { error: dbError } = await supabaseClient
+        .from('productos')
+        .delete()
+        .eq('id', id);
+
+    if (dbError) {
+        alert("No se pudo borrar el producto: " + dbError.message);
+        btnConfirmarBorrar.disabled = false;
+        btnConfirmarBorrar.innerText = "Si, eliminar";
+        return;
+    }
+
+    if (pathsStorage.length) {
+        const { error: storageError } = await supabaseClient.storage
+            .from(BUCKET_FOTOS)
+            .remove(pathsStorage);
+
+        if (storageError) {
+            console.warn("Producto borrado, pero no se pudieron borrar todas las fotos:", storageError);
+        }
+    }
+
+    btnConfirmarBorrar.disabled = false;
+    btnConfirmarBorrar.innerText = "Si, eliminar";
+    cerrarModalBorrar();
+    await cargarProductosAdmin();
+}
+
+function cargarProductoParaEditar(producto) {
+    productoEditando = producto;
+    document.getElementById('nombre').value = producto.nombre || '';
+    document.getElementById('precio').value = producto.precio || '';
+    document.getElementById('categoria').value = producto.categoria || 'conjuntos';
+    document.getElementById('colores').value = producto.colores || '';
+
+    const talles = String(producto.talles || '')
+        .split(',')
+        .map((talle) => talle.trim())
+        .filter(Boolean);
+
+    document.querySelectorAll('#talles-selector button').forEach((boton) => {
+        boton.classList.toggle('selected', talles.includes(boton.dataset.talle));
+    });
+    sincronizarTallesSeleccionados();
+    actualizarPrecioPreview();
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    mostrarEstado("GUARDAR CAMBIOS");
+}
+
 async function cargarProductosAdmin() {
     productosAdmin.innerHTML = Array.from({ length: 4 }, () => `
         <article class="admin-producto admin-producto-skeleton" aria-hidden="true">
@@ -304,11 +380,14 @@ async function cargarProductosAdmin() {
         return;
     }
 
+    productosAdminCache = data || [];
     productosAdmin.innerHTML = data.map((prod) => {
         const imagenes = obtenerImagenesProducto(prod);
         const imagenPrincipal = imagenes[0] || prod.imagen_url || '';
         const detalleFotos = `${imagenes.length} foto${imagenes.length === 1 ? '' : 's'}`;
         const detalleColores = prod.colores ? ` · ${prod.colores}` : '';
+
+        const disponible = prod.stock !== false;
 
         return `
         <article class="admin-producto ${prod.stock === false ? 'sin-stock' : ''}">
@@ -319,8 +398,12 @@ async function cargarProductosAdmin() {
                 <span>${detalleFotos}${detalleColores}</span>
                 <small>${prod.stock === false ? 'SIN STOCK' : 'EN STOCK'}</small>
             </div>
-            <button type="button" data-accion="stock" data-id="${prod.id}" data-stock="${prod.stock === false ? 'true' : 'false'}">
-                ${prod.stock === false ? 'Reactivar' : 'Sin stock'}
+            <button class="stock-switch ${disponible ? 'active' : ''}" type="button" data-accion="stock" data-id="${prod.id}" data-stock="${disponible ? 'false' : 'true'}">
+                <span></span>
+                Mostrar en la web
+            </button>
+            <button type="button" data-accion="editar" data-id="${prod.id}">
+                Editar
             </button>
             <button type="button" data-accion="borrar" data-id="${prod.id}" data-imagenes="${escaparAtributo(JSON.stringify(imagenes))}">
                 Borrar
@@ -386,39 +469,21 @@ productosAdmin.addEventListener('click', async (e) => {
         await cargarProductosAdmin();
     }
 
-    if (boton.dataset.accion === 'borrar') {
-        const confirmar = confirm("Seguro que queres borrar este producto y sus fotos?");
-        if (!confirmar) return;
-
-        boton.disabled = true;
-        const imagenes = JSON.parse(boton.dataset.imagenes || '[]');
-        const pathsStorage = imagenes
-            .map((imagen) => obtenerPathStorage(imagen))
-            .filter(Boolean);
-
-        const { error: dbError } = await supabaseClient
-            .from('productos')
-            .delete()
-            .eq('id', id);
-
-        if (dbError) {
-            alert("No se pudo borrar el producto: " + dbError.message);
-            boton.disabled = false;
-            return;
-        }
-
-        if (pathsStorage.length) {
-            const { error: storageError } = await supabaseClient.storage
-                .from(BUCKET_FOTOS)
-                .remove(pathsStorage);
-
-            if (storageError) {
-                console.warn("Producto borrado, pero no se pudieron borrar todas las fotos:", storageError);
-            }
-        }
-
-        await cargarProductosAdmin();
+    if (boton.dataset.accion === 'editar') {
+        const producto = productosAdminCache.find((prod) => String(prod.id) === String(id));
+        if (producto) cargarProductoParaEditar(producto);
     }
+
+    if (boton.dataset.accion === 'borrar') {
+        const imagenes = JSON.parse(boton.dataset.imagenes || '[]');
+        abrirModalBorrar({ id, imagenes });
+    }
+});
+
+btnConfirmarBorrar.addEventListener('click', borrarProductoConfirmado);
+btnCancelarBorrar.addEventListener('click', cerrarModalBorrar);
+modalBorrar.addEventListener('click', (event) => {
+    if (event.target === modalBorrar) cerrarModalBorrar();
 });
 
 form.addEventListener('submit', async (e) => {
@@ -443,7 +508,7 @@ form.addEventListener('submit', async (e) => {
             throw new Error("Tenes que iniciar sesion para publicar.");
         }
 
-        if (!fotosArchivos.length) {
+        if (!productoEditando && !fotosArchivos.length) {
             throw new Error("Selecciona al menos una foto antes de publicar.");
         }
 
@@ -455,7 +520,9 @@ form.addEventListener('submit', async (e) => {
             throw new Error("Selecciona al menos un talle disponible.");
         }
 
-        const urlsFotos = [];
+        let urlsFotos = productoEditando && !fotosArchivos.length
+            ? obtenerImagenesProducto(productoEditando)
+            : [];
 
         for (const [index, fotoArchivo] of fotosArchivos.entries()) {
             mostrarEstado(`Preparando fotos ${index + 1}/${fotosArchivos.length}...`);
@@ -489,24 +556,46 @@ form.addEventListener('submit', async (e) => {
         }
 
         mostrarEstado("Guardando producto...");
-        const { error: dbError } = await supabaseClient
-            .from('productos')
-            .insert([
-                {
-                    nombre,
-                    precio,
-                    categoria,
-                    talles,
-                    colores,
-                    imagen_url: urlsFotos[0],
-                    imagenes_urls: urlsFotos,
-                    stock: true
-                }
-            ]);
+        const datosProducto = {
+            nombre,
+            precio,
+            categoria,
+            talles,
+            colores,
+            imagen_url: urlsFotos[0],
+            imagenes_urls: urlsFotos,
+            stock: productoEditando ? productoEditando.stock !== false : true
+        };
+
+        const { error: dbError } = productoEditando
+            ? await supabaseClient
+                .from('productos')
+                .update(datosProducto)
+                .eq('id', productoEditando.id)
+            : await supabaseClient
+                .from('productos')
+                .insert([datosProducto]);
 
         if (dbError) throw dbError;
 
-        alert("Prenda publicada con exito.");
+        if (productoEditando && fotosArchivos.length) {
+            const pathsAnteriores = obtenerImagenesProducto(productoEditando)
+                .map((imagen) => obtenerPathStorage(imagen))
+                .filter(Boolean);
+
+            if (pathsAnteriores.length) {
+                const { error: storageError } = await supabaseClient.storage
+                    .from(BUCKET_FOTOS)
+                    .remove(pathsAnteriores);
+
+                if (storageError) {
+                    console.warn("Producto actualizado, pero no se pudieron borrar fotos anteriores:", storageError);
+                }
+            }
+        }
+
+        alert(productoEditando ? "Prenda actualizada con exito." : "Prenda publicada con exito.");
+        productoEditando = null;
         form.reset();
         resetearControlesGuiados();
         limpiarPreviewFotos();
@@ -516,7 +605,7 @@ form.addEventListener('submit', async (e) => {
         console.error(err);
         alert("Ocurrio un error: " + err.message);
     } finally {
-        mostrarEstado("PUBLICAR EN LA WEB");
+        mostrarEstado(productoEditando ? "GUARDAR CAMBIOS" : "PUBLICAR EN LA WEB");
         btn.disabled = false;
     }
 });
