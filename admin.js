@@ -5,6 +5,8 @@ let supabaseClient = null;
 
 const form = document.getElementById('form-panel');
 const PESO_MAXIMO_IMAGEN = 100 * 1024; // 100KB
+const ANCHO_MAXIMO_IMAGEN = 800;
+const CALIDAD_INICIAL_IMAGEN = 0.7;
 
 function mostrarEstado(mensaje) {
     const btn = document.getElementById('btn-publicar');
@@ -30,9 +32,9 @@ function obtenerSupabaseClient() {
     return supabaseClient;
 }
 
-function blobDesdeCanvas(canvas, calidad) {
+function blobDesdeCanvas(canvas, calidad, tipo = 'image/webp') {
     return new Promise((resolve) => {
-        canvas.toBlob(resolve, 'image/jpeg', calidad);
+        canvas.toBlob(resolve, tipo, calidad);
     });
 }
 
@@ -51,8 +53,9 @@ async function comprimirImagen(archivo, pesoMaximo = PESO_MAXIMO_IMAGEN) {
         img.src = dataUrl;
     });
 
-    let maxDimension = 1200;
+    let maxDimension = ANCHO_MAXIMO_IMAGEN;
     let blobComprimido = null;
+    let tipoSalida = 'image/webp';
 
     while (maxDimension >= 320) {
         const escala = Math.min(1, maxDimension / Math.max(imagen.width, imagen.height));
@@ -63,16 +66,25 @@ async function comprimirImagen(archivo, pesoMaximo = PESO_MAXIMO_IMAGEN) {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(imagen, 0, 0, canvas.width, canvas.height);
 
-        let calidad = 0.82;
+        let calidad = CALIDAD_INICIAL_IMAGEN;
 
-        while (calidad >= 0.35) {
-            blobComprimido = await blobDesdeCanvas(canvas, calidad);
+        while (calidad >= 0.4) {
+            blobComprimido = await blobDesdeCanvas(canvas, calidad, tipoSalida);
 
-            if (blobComprimido && blobComprimido.size <= pesoMaximo) {
-                return blobComprimido;
+            if (!blobComprimido) {
+                tipoSalida = 'image/jpeg';
+                blobComprimido = await blobDesdeCanvas(canvas, calidad, tipoSalida);
             }
 
-            calidad -= 0.08;
+            if (blobComprimido && blobComprimido.size <= pesoMaximo) {
+                return {
+                    blob: blobComprimido,
+                    extension: tipoSalida === 'image/webp' ? 'webp' : 'jpg',
+                    contentType: tipoSalida
+                };
+            }
+
+            calidad -= 0.1;
         }
 
         maxDimension -= 200;
@@ -113,13 +125,13 @@ form.addEventListener('submit', async (e) => {
             .replace(/\.[^/.]+$/, '')
             .replace(/\s+/g, '-')
             .replace(/[^a-zA-Z0-9-_]/g, '');
-        const nombreImagen = `${Date.now()}-${nombreBase || 'producto'}.jpg`;
+        const nombreImagen = `${Date.now()}-${nombreBase || 'producto'}.${fotoComprimida.extension}`;
 
         mostrarEstado("Subiendo ropa...");
         const { error: uploadError } = await supabase.storage
             .from(BUCKET_FOTOS)
-            .upload(nombreImagen, fotoComprimida, {
-                contentType: 'image/jpeg',
+            .upload(nombreImagen, fotoComprimida.blob, {
+                contentType: fotoComprimida.contentType,
                 upsert: false
             });
 

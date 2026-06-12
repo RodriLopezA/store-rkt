@@ -999,6 +999,33 @@ body.scrolled .hero-scroll-cue {
     gap: 28px 18px;
 }
 
+.load-more-wrap {
+    margin-top: 34px;
+    display: flex;
+    justify-content: center;
+}
+
+#btn-ver-mas {
+    min-height: 46px;
+    padding: 0 24px;
+    border: 0;
+    background: #050505;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+#btn-ver-mas:hover:not(:disabled) {
+    background: #c8ff00;
+    color: #050505;
+}
+
+#btn-ver-mas:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
 .producto-card {
     min-width: 0;
     background: #ffffff;

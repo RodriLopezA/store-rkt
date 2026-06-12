@@ -3,43 +3,139 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const NUMERO_WSP = "549221XXXXXXX";
+const PRODUCTOS_POR_PAGINA = 12;
 
 let productosData = [];
 let categoriaActiva = "todo";
 let ordenActivo = "relevantes";
 let busquedaActiva = "";
+let paginaActual = 0;
+let hayMasProductos = true;
+let cargandoProductos = false;
 
 async function obtenerProductos() {
     const loading = document.getElementById('loading');
     const loadingDestacados = document.getElementById('loading-destacados');
 
+    if (document.getElementById('producto-detalle')) {
+        await obtenerProductoDetalle();
+        return;
+    }
+
+    if (loadingDestacados && !loading) {
+        await obtenerProductosDestacados();
+        return;
+    }
+
+    if (loading) {
+        await cargarPaginaProductos({ reiniciar: true });
+    }
+}
+
+async function obtenerProductosDestacados() {
+    const loadingDestacados = document.getElementById('loading-destacados');
+
     const { data, error } = await supabaseClient
         .from('productos')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .range(0, 3);
 
     if (error) {
         console.error("Error cargando productos:", error);
-        if (loading) loading.innerText = "No se pudieron cargar los productos.";
         if (loadingDestacados) loadingDestacados.innerText = "No se pudieron cargar los destacados.";
         return;
     }
 
     productosData = data || [];
+    renderizarDestacados(productosData);
+}
 
-    if (document.getElementById('producto-detalle')) {
-        renderizarDetalleProducto();
-        return;
+async function cargarPaginaProductos({ reiniciar = false } = {}) {
+    const loading = document.getElementById('loading');
+    const btnVerMas = document.getElementById('btn-ver-mas');
+
+    if (cargandoProductos) return;
+
+    if (reiniciar) {
+        paginaActual = 0;
+        hayMasProductos = true;
+        productosData = [];
     }
 
-    if (loadingDestacados) {
-        renderizarDestacados(productosData.slice(0, 4));
+    if (!hayMasProductos) return;
+
+    cargandoProductos = true;
+    if (btnVerMas) {
+        btnVerMas.disabled = true;
+        btnVerMas.innerText = "Cargando...";
+    }
+
+    const desde = paginaActual * PRODUCTOS_POR_PAGINA;
+    const hasta = desde + PRODUCTOS_POR_PAGINA - 1;
+
+    const { data, error } = await supabaseClient
+        .from('productos')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .range(desde, hasta);
+
+    cargandoProductos = false;
+
+    if (error) {
+        console.error("Error cargando productos:", error);
+        if (loading) loading.innerText = "No se pudieron cargar los productos.";
+        if (btnVerMas) {
+            btnVerMas.disabled = false;
+            btnVerMas.innerText = "Ver mas";
+        }
+        return;
     }
 
     if (loading) {
         loading.style.display = 'none';
-        aplicarFiltros();
     }
+
+    const nuevosProductos = data || [];
+    productosData = reiniciar ? nuevosProductos : [...productosData, ...nuevosProductos];
+    paginaActual += 1;
+    hayMasProductos = nuevosProductos.length === PRODUCTOS_POR_PAGINA;
+
+    aplicarFiltros();
+    actualizarBotonVerMas();
+}
+
+async function obtenerProductoDetalle() {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    const nombre = params.get('nombre');
+    let query = supabaseClient.from('productos').select('*').limit(1);
+
+    if (id !== null) {
+        query = query.eq('id', id);
+    } else if (nombre !== null) {
+        query = query.eq('nombre', nombre);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error("Error cargando producto:", error);
+        document.getElementById('producto-detalle').innerHTML = '<div class="mensaje-alerta">No se pudo cargar el producto.</div>';
+        return;
+    }
+
+    productosData = data || [];
+    renderizarDetalleProducto();
+}
+
+function actualizarBotonVerMas() {
+    const btnVerMas = document.getElementById('btn-ver-mas');
+    if (!btnVerMas) return;
+
+    btnVerMas.disabled = false;
+    btnVerMas.innerText = "Ver mas";
+    btnVerMas.style.display = hayMasProductos ? 'inline-flex' : 'none';
 }
 
 function normalizarCategoria(categoria) {
@@ -336,11 +432,29 @@ function configurarDetalleTabs() {
     });
 }
 
-function renderizarRelacionados(productoActual) {
+async function renderizarRelacionados(productoActual) {
     const grid = document.getElementById('grid-relacionados');
     if (!grid) return;
 
-    const relacionados = productosData
+    let query = supabaseClient
+        .from('productos')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+    if (productoActual.id !== undefined) {
+        query = query.neq('id', productoActual.id);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+        console.error("Error cargando relacionados:", error);
+        grid.innerHTML = '<div class="mensaje-alerta">No se pudieron cargar productos relacionados.</div>';
+        return;
+    }
+
+    const relacionados = (data || [])
         .filter((prod) => {
             const mismoProducto = productoActual.id !== undefined
                 ? String(prod.id) === String(productoActual.id)
@@ -380,6 +494,7 @@ function enviarPedido(nombre, precio, boton) {
 function configurarFiltros() {
     const botonesCategoria = document.querySelectorAll('[data-categoria]');
     const selectOrden = document.getElementById('orden-productos');
+    const btnVerMas = document.getElementById('btn-ver-mas');
 
     const params = new URLSearchParams(window.location.search);
     const categoriaUrl = params.get('categoria');
@@ -420,6 +535,10 @@ function configurarFiltros() {
             ordenActivo = selectOrden.value;
             aplicarFiltros();
         });
+    }
+
+    if (btnVerMas) {
+        btnVerMas.addEventListener('click', () => cargarPaginaProductos());
     }
 }
 
