@@ -1,10 +1,15 @@
 const SUPABASE_URL = "https://zpyhryenaaiewbjzjmfg.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpweWhyeWVuYWFpZXdianpqbWZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjgyNTIsImV4cCI6MjA5NjgwNDI1Mn0.hzHO4eRH7xH_O1zo6_lBs9kbsImBNLnDxL23okgK9_g";
 const BUCKET_FOTOS = "fotos-ropa";
-let supabaseClient = null;
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const formLogin = document.getElementById('form-login');
+const loginAdmin = document.getElementById('login-admin');
+const panelAdmin = document.getElementById('panel-admin');
 const form = document.getElementById('form-panel');
-const PESO_MAXIMO_IMAGEN = 100 * 1024; // 100KB
+const productosAdmin = document.getElementById('admin-productos');
+
+const PESO_MAXIMO_IMAGEN = 100 * 1024;
 const ANCHO_MAXIMO_IMAGEN = 800;
 const CALIDAD_INICIAL_IMAGEN = 0.7;
 
@@ -13,23 +18,18 @@ function mostrarEstado(mensaje) {
     if (btn) btn.innerText = mensaje;
 }
 
-function obtenerSupabaseClient() {
-    if (!window.supabase) {
-        throw new Error("No se pudo cargar Supabase. Revisa tu conexion a internet.");
-    }
+function mostrarPanelAutenticado(autenticado) {
+    loginAdmin.hidden = autenticado;
+    panelAdmin.hidden = !autenticado;
+}
 
-    if (
-        SUPABASE_URL === "TU_SUPABASE_URL" ||
-        SUPABASE_KEY === "TU_SUPABASE_ANON_KEY"
-    ) {
-        throw new Error("Faltan configurar SUPABASE_URL y SUPABASE_ANON_KEY en admin.js.");
-    }
+async function verificarSesion() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    mostrarPanelAutenticado(Boolean(session));
 
-    if (!supabaseClient) {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    if (session) {
+        await cargarProductosAdmin();
     }
-
-    return supabaseClient;
 }
 
 function blobDesdeCanvas(canvas, calidad, tipo = 'image/webp') {
@@ -54,7 +54,6 @@ async function comprimirImagen(archivo, pesoMaximo = PESO_MAXIMO_IMAGEN) {
     });
 
     let maxDimension = ANCHO_MAXIMO_IMAGEN;
-    let blobComprimido = null;
     let tipoSalida = 'image/webp';
 
     while (maxDimension >= 320) {
@@ -69,7 +68,7 @@ async function comprimirImagen(archivo, pesoMaximo = PESO_MAXIMO_IMAGEN) {
         let calidad = CALIDAD_INICIAL_IMAGEN;
 
         while (calidad >= 0.4) {
-            blobComprimido = await blobDesdeCanvas(canvas, calidad, tipoSalida);
+            let blobComprimido = await blobDesdeCanvas(canvas, calidad, tipoSalida);
 
             if (!blobComprimido) {
                 tipoSalida = 'image/jpeg';
@@ -93,6 +92,142 @@ async function comprimirImagen(archivo, pesoMaximo = PESO_MAXIMO_IMAGEN) {
     return null;
 }
 
+function obtenerPathStorage(imagenUrl) {
+    if (!imagenUrl) return null;
+
+    const marcador = `/storage/v1/object/public/${BUCKET_FOTOS}/`;
+    const indice = imagenUrl.indexOf(marcador);
+
+    if (indice === -1) return null;
+
+    return decodeURIComponent(imagenUrl.slice(indice + marcador.length));
+}
+
+async function cargarProductosAdmin() {
+    productosAdmin.innerHTML = '<p class="mensaje-alerta">Cargando productos...</p>';
+
+    const { data, error } = await supabaseClient
+        .from('productos')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error) {
+        console.error(error);
+        productosAdmin.innerHTML = '<p class="mensaje-alerta">No se pudieron cargar los productos.</p>';
+        return;
+    }
+
+    if (!data.length) {
+        productosAdmin.innerHTML = '<p class="mensaje-alerta">Todavia no hay productos cargados.</p>';
+        return;
+    }
+
+    productosAdmin.innerHTML = data.map((prod) => `
+        <article class="admin-producto ${prod.stock === false ? 'sin-stock' : ''}">
+            <img src="${prod.imagen_url}" alt="${prod.nombre}">
+            <div>
+                <strong>${prod.nombre}</strong>
+                <span>${prod.categoria || 'sin categoria'} · $${Number(prod.precio || 0).toLocaleString('es-AR')}</span>
+                <small>${prod.stock === false ? 'SIN STOCK' : 'EN STOCK'}</small>
+            </div>
+            <button type="button" data-accion="stock" data-id="${prod.id}" data-stock="${prod.stock === false ? 'true' : 'false'}">
+                ${prod.stock === false ? 'Reactivar' : 'Sin stock'}
+            </button>
+            <button type="button" data-accion="borrar" data-id="${prod.id}" data-imagen="${prod.imagen_url}">
+                Borrar
+            </button>
+        </article>
+    `).join('');
+}
+
+formLogin.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const btn = document.getElementById('btn-login');
+    btn.innerText = "INGRESANDO...";
+    btn.disabled = true;
+
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+    if (error) {
+        alert("No se pudo iniciar sesion: " + error.message);
+        btn.innerText = "INGRESAR";
+        btn.disabled = false;
+        return;
+    }
+
+    formLogin.reset();
+    btn.innerText = "INGRESAR";
+    btn.disabled = false;
+    mostrarPanelAutenticado(true);
+    await cargarProductosAdmin();
+});
+
+document.getElementById('btn-logout').addEventListener('click', async () => {
+    await supabaseClient.auth.signOut();
+    mostrarPanelAutenticado(false);
+});
+
+document.getElementById('btn-recargar-productos').addEventListener('click', cargarProductosAdmin);
+
+productosAdmin.addEventListener('click', async (e) => {
+    const boton = e.target.closest('button');
+    if (!boton) return;
+
+    const id = boton.dataset.id;
+
+    if (boton.dataset.accion === 'stock') {
+        boton.disabled = true;
+        const nuevoStock = boton.dataset.stock === 'true';
+        const { error } = await supabaseClient
+            .from('productos')
+            .update({ stock: nuevoStock })
+            .eq('id', id);
+
+        if (error) {
+            alert("No se pudo actualizar stock: " + error.message);
+            boton.disabled = false;
+            return;
+        }
+
+        await cargarProductosAdmin();
+    }
+
+    if (boton.dataset.accion === 'borrar') {
+        const confirmar = confirm("Seguro que queres borrar este producto y su foto?");
+        if (!confirmar) return;
+
+        boton.disabled = true;
+        const pathStorage = obtenerPathStorage(boton.dataset.imagen);
+
+        const { error: dbError } = await supabaseClient
+            .from('productos')
+            .delete()
+            .eq('id', id);
+
+        if (dbError) {
+            alert("No se pudo borrar el producto: " + dbError.message);
+            boton.disabled = false;
+            return;
+        }
+
+        if (pathStorage) {
+            const { error: storageError } = await supabaseClient.storage
+                .from(BUCKET_FOTOS)
+                .remove([pathStorage]);
+
+            if (storageError) {
+                console.warn("Producto borrado, pero no se pudo borrar la foto:", storageError);
+            }
+        }
+
+        await cargarProductosAdmin();
+    }
+});
+
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -107,7 +242,10 @@ form.addEventListener('submit', async (e) => {
     const fotoArchivo = document.getElementById('foto').files[0];
 
     try {
-        const supabase = obtenerSupabaseClient();
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+            throw new Error("Tenes que iniciar sesion para publicar.");
+        }
 
         if (!fotoArchivo) {
             throw new Error("Selecciona una foto antes de publicar.");
@@ -120,7 +258,6 @@ form.addEventListener('submit', async (e) => {
             throw new Error("No se pudo comprimir la imagen por debajo de 100KB. Proba con otra foto.");
         }
 
-        // Crear nombre unico de imagen para que no se pisen.
         const nombreBase = fotoArchivo.name
             .replace(/\.[^/.]+$/, '')
             .replace(/\s+/g, '-')
@@ -128,37 +265,30 @@ form.addEventListener('submit', async (e) => {
         const nombreImagen = `${Date.now()}-${nombreBase || 'producto'}.${fotoComprimida.extension}`;
 
         mostrarEstado("Subiendo ropa...");
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabaseClient.storage
             .from(BUCKET_FOTOS)
             .upload(nombreImagen, fotoComprimida.blob, {
                 contentType: fotoComprimida.contentType,
                 upsert: false
             });
 
-        if (uploadError) {
-            if (uploadError.message === "Bucket not found") {
-                throw new Error(`No existe el bucket "${BUCKET_FOTOS}" en Supabase Storage.`);
-            }
+        if (uploadError) throw uploadError;
 
-            throw uploadError;
-        }
-
-        const { data: urlData } = supabase.storage
+        const { data: urlData } = supabaseClient.storage
             .from(BUCKET_FOTOS)
             .getPublicUrl(nombreImagen);
 
-        const urlFinalImagen = urlData.publicUrl;
-
         mostrarEstado("Guardando producto...");
-        const { error: dbError } = await supabase
+        const { error: dbError } = await supabaseClient
             .from('productos')
             .insert([
                 {
-                    nombre: nombre,
-                    precio: precio,
-                    categoria: categoria,
-                    talles: talles,
-                    imagen_url: urlFinalImagen
+                    nombre,
+                    precio,
+                    categoria,
+                    talles,
+                    imagen_url: urlData.publicUrl,
+                    stock: true
                 }
             ]);
 
@@ -166,6 +296,7 @@ form.addEventListener('submit', async (e) => {
 
         alert("Prenda publicada con exito.");
         form.reset();
+        await cargarProductosAdmin();
 
     } catch (err) {
         console.error(err);
@@ -175,3 +306,5 @@ form.addEventListener('submit', async (e) => {
         btn.disabled = false;
     }
 });
+
+verificarSesion();

@@ -3,16 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control </title>
+    <title>Panel de Control</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="bg-admin">
 
-    <div class="admin-container">
-        <h1>PANEL DE CARGA - EXCLUSIVO </h1>
-        <p class="sub-admin">Subí ropa al catálogo en tiempo real desde el celu</p>
+    <section class="admin-container" id="login-admin">
+        <h1>ACCESO ADMIN</h1>
+        <p class="sub-admin">Inicia sesion para administrar el catalogo</p>
+
+        <form id="form-login">
+            <div class="grupo-input">
+                <label>EMAIL</label>
+                <input type="email" id="login-email" placeholder="admin@tutienda.com" required>
+            </div>
+
+            <div class="grupo-input">
+                <label>CONTRASENA</label>
+                <input type="password" id="login-password" placeholder="Tu contrasena" required>
+            </div>
+
+            <button type="submit" id="btn-login">INGRESAR</button>
+        </form>
+    </section>
+
+    <section class="admin-container admin-panel" id="panel-admin" hidden>
+        <div class="admin-panel-head">
+            <div>
+                <h1>PANEL DE CARGA</h1>
+                <p class="sub-admin">Subi ropa al catalogo en tiempo real</p>
+            </div>
+            <button type="button" id="btn-logout">SALIR</button>
+        </div>
         
         <form id="form-panel">
             <div class="grupo-input">
@@ -26,11 +50,12 @@
             </div>
 
             <div class="grupo-input">
-                <label>CATEGORÍA</label>
+                <label>CATEGORIA</label>
                 <select id="categoria">
                     <option value="conjuntos">CONJUNTOS</option>
                     <option value="buzos">BUZOS / CAMPERAS</option>
                     <option value="joggings">JOGGINGS / PANTALONES</option>
+                    <option value="remeras">REMERAS</option>
                 </select>
             </div>
 
@@ -40,13 +65,23 @@
             </div>
 
             <div class="grupo-input">
-                <label>FOTO DE LA PRENDA (Cámara o Galería)</label>
+                <label>FOTO DE LA PRENDA (Camara o Galeria)</label>
                 <input type="file" id="foto" accept="image/*" required>
             </div>
 
-            <button type="submit" id="btn-publicar">⚡ PUBLICAR EN LA WEB ⚡</button>
+            <button type="submit" id="btn-publicar">PUBLICAR EN LA WEB</button>
         </form>
-    </div>
+
+        <div class="admin-listado">
+            <div class="admin-listado-head">
+                <h2>PRODUCTOS CARGADOS</h2>
+                <button type="button" id="btn-recargar-productos">RECARGAR</button>
+            </div>
+            <div id="admin-productos" class="admin-productos">
+                <p class="mensaje-alerta">Cargando productos...</p>
+            </div>
+        </div>
+    </section>
 
     <script src="admin.js"></script>
 </body>

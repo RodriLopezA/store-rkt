@@ -1090,6 +1090,11 @@ body.scrolled .hero-scroll-cue {
     text-transform: uppercase;
 }
 
+.badge-rkt.agotado {
+    background: #ff4343;
+    color: #ffffff;
+}
+
 .producto-info {
     padding: 14px;
 }
@@ -1203,6 +1208,13 @@ body.scrolled .hero-scroll-cue {
     color: #050505;
 }
 
+.btn-wsp:disabled,
+.detalle-cta:disabled {
+    background: #9b9b9b;
+    color: #ffffff;
+    cursor: not-allowed;
+}
+
 .info-section {
     width: min(1424px, calc(100% - 56px));
     margin: 0 auto 28px;
@@ -1289,6 +1301,94 @@ body.scrolled .hero-scroll-cue {
     margin: 40px auto;
     padding: 30px;
     box-shadow: 10px 10px 0 #000000;
+}
+
+.admin-panel {
+    max-width: 860px;
+}
+
+.admin-panel-head,
+.admin-listado-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+#btn-login,
+#btn-logout,
+#btn-recargar-productos {
+    background: #000000;
+    color: #ffffff;
+    border: 0;
+    padding: 10px 14px;
+    font-weight: 800;
+}
+
+.admin-listado {
+    margin-top: 34px;
+    padding-top: 24px;
+    border-top: 2px solid #000000;
+}
+
+.admin-listado h2 {
+    font-size: 22px;
+}
+
+.admin-productos {
+    margin-top: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.admin-producto {
+    display: grid;
+    grid-template-columns: 72px 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px;
+    border: 2px solid #000000;
+    background: #ffffff;
+}
+
+.admin-producto.sin-stock {
+    opacity: 0.68;
+}
+
+.admin-producto img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    background: #eeeeee;
+}
+
+.admin-producto strong,
+.admin-producto span,
+.admin-producto small {
+    display: block;
+}
+
+.admin-producto span {
+    color: #555555;
+    font-size: 13px;
+}
+
+.admin-producto small {
+    margin-top: 4px;
+    font-weight: 900;
+}
+
+.admin-producto button {
+    min-height: 36px;
+    border: 0;
+    padding: 0 12px;
+    background: #000000;
+    color: #ffffff;
+    font-weight: 800;
+}
+
+.admin-producto button[data-accion="borrar"] {
+    background: #ff4343;
 }
 
 .admin-container h1 {
@@ -1555,5 +1655,24 @@ body.scrolled .hero-scroll-cue {
         padding: 24px 18px;
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .admin-panel-head,
+    .admin-listado-head {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-producto {
+        grid-template-columns: 64px 1fr;
+    }
+
+    .admin-producto img {
+        width: 64px;
+        height: 64px;
+    }
+
+    .admin-producto button {
+        grid-column: 1 / -1;
     }
 }

@@ -217,7 +217,7 @@ function renderizarCards(lista, grid) {
         card.tabIndex = 0;
         card.innerHTML = `
             <div class="img-contenedor">
-                <span class="badge-rkt">Nuevo ingreso</span>
+                <span class="badge-rkt ${prod.stock === false ? 'agotado' : ''}">${prod.stock === false ? 'Agotado' : 'Nuevo ingreso'}</span>
                 <button class="fav-btn" type="button" aria-label="Agregar a favoritos">&hearts;</button>
                 <img class="producto-img" src="${prod.imagen_url}" alt="${prod.nombre}" loading="lazy">
             </div>
@@ -228,10 +228,12 @@ function renderizarCards(lista, grid) {
                 <span class="prod-cuotas">6 cuotas sin interes de $${cuotas.toLocaleString('es-AR')}</span>
                 <div class="prod-badges">
                     <span class="mini-badge">Gratis</span>
-                    <span class="stock-badge">Stock disponible</span>
+                    <span class="stock-badge">${prod.stock === false ? 'Sin stock' : 'Stock disponible'}</span>
                 </div>
                 <div class="talles-grid">${tallesHTML}</div>
-                <button class="btn-wsp" onclick="enviarPedido('${escaparTexto(prod.nombre)}', '${precio}', this)">Consultar por WhatsApp</button>
+                <button class="btn-wsp" ${prod.stock === false ? 'disabled' : ''} onclick="enviarPedido('${escaparTexto(prod.nombre)}', '${precio}', this)">
+                    ${prod.stock === false ? 'Agotado' : 'Consultar por WhatsApp'}
+                </button>
             </div>
         `;
 
@@ -293,7 +295,7 @@ function renderizarDetalleProducto() {
         <section class="detalle-info">
             <div class="detalle-pills">
                 <span>${producto.categoria || 'Producto'}</span>
-                <strong>Ingreso</strong>
+                <strong>${producto.stock === false ? 'Agotado' : 'Ingreso'}</strong>
             </div>
 
             <h1>${producto.nombre}</h1>
@@ -326,9 +328,11 @@ function renderizarDetalleProducto() {
                 <button type="button" id="cantidad-mas">+</button>
             </div>
 
-            <span class="detalle-alerta">Ultimas unidades</span>
+            <span class="detalle-alerta">${producto.stock === false ? 'Sin stock' : 'Ultimas unidades'}</span>
 
-            <button class="detalle-cta" type="button" id="detalle-consultar">Agregar al carrito</button>
+            <button class="detalle-cta" type="button" id="detalle-consultar" ${producto.stock === false ? 'disabled' : ''}>
+                ${producto.stock === false ? 'Agotado' : 'Agregar al carrito'}
+            </button>
 
             <div class="detalle-beneficios">
                 <div>
