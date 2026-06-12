@@ -2129,6 +2129,10 @@ body.cart-open .cart-backdrop {
 #btn-publicar {
     width: 100%;
     min-height: 56px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     background: #000000;
     color: #ffffff;
     border: none;
@@ -2138,9 +2142,65 @@ body.cart-open .cart-backdrop {
     cursor: pointer;
 }
 
-#btn-publicar:hover {
+#btn-publicar:disabled {
+    opacity: 0.78;
+    cursor: wait;
+}
+
+.btn-spinner {
+    width: 18px;
+    height: 18px;
+    display: none;
+    border: 3px solid rgba(255, 255, 255, 0.36);
+    border-top-color: #c8ff00;
+    border-radius: 50%;
+    animation: admin-spin 0.75s linear infinite;
+}
+
+#btn-publicar.is-loading .btn-spinner {
+    display: inline-block;
+}
+
+@keyframes admin-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+#btn-publicar:hover:not(:disabled) {
     background: #ccff00;
     color: #000000;
+}
+
+.admin-toast {
+    min-width: min(360px, calc(100% - 28px));
+    max-width: calc(100% - 28px);
+    padding: 14px 18px;
+    position: fixed;
+    left: 50%;
+    bottom: 22px;
+    z-index: 120;
+    border: 2px solid #0f5f20;
+    background: #20c45a;
+    color: #ffffff;
+    box-shadow: 6px 6px 0 #050505;
+    font-size: 15px;
+    font-weight: 900;
+    text-align: center;
+    transform: translate(-50%, 18px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.admin-toast.visible {
+    opacity: 1;
+    transform: translate(-50%, 0);
+}
+
+.admin-toast.error {
+    border-color: #871b1b;
+    background: #ff4343;
 }
 
 .admin-modal[hidden] {

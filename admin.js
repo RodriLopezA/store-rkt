@@ -25,7 +25,36 @@ let productoEditando = null;
 
 function mostrarEstado(mensaje) {
     const btn = document.getElementById('btn-publicar');
-    if (btn) btn.innerText = mensaje;
+    const label = btn?.querySelector('.btn-label');
+    if (label) label.innerText = mensaje;
+}
+
+function setPublicando(publicando, mensaje = "Subiendo...") {
+    const btn = document.getElementById('btn-publicar');
+    if (!btn) return;
+
+    btn.disabled = publicando;
+    btn.classList.toggle('is-loading', publicando);
+    mostrarEstado(mensaje);
+}
+
+function mostrarToast(mensaje, tipo = 'exito') {
+    let toast = document.getElementById('admin-toast');
+
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'admin-toast';
+        toast.className = 'admin-toast';
+        document.body.appendChild(toast);
+    }
+
+    toast.className = `admin-toast ${tipo} visible`;
+    toast.innerText = mensaje;
+
+    clearTimeout(mostrarToast.timeout);
+    mostrarToast.timeout = setTimeout(() => {
+        toast.classList.remove('visible');
+    }, 3000);
 }
 
 function mostrarPanelAutenticado(autenticado) {
@@ -490,8 +519,7 @@ form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const btn = document.getElementById('btn-publicar');
-    mostrarEstado("Preparando publicacion...");
-    btn.disabled = true;
+    setPublicando(true, "Subiendo...");
 
     const nombre = document.getElementById('nombre').value;
     const precio = Number(document.getElementById('precio').value);
@@ -594,7 +622,10 @@ form.addEventListener('submit', async (e) => {
             }
         }
 
-        alert(productoEditando ? "Prenda actualizada con exito." : "Prenda publicada con exito.");
+        const mensajeExito = productoEditando
+            ? "🚀 ¡Producto actualizado con éxito!"
+            : "🚀 ¡Producto publicado con éxito!";
+        mostrarToast(mensajeExito);
         productoEditando = null;
         form.reset();
         resetearControlesGuiados();
@@ -603,10 +634,9 @@ form.addEventListener('submit', async (e) => {
 
     } catch (err) {
         console.error(err);
-        alert("Ocurrio un error: " + err.message);
+        mostrarToast("Ocurrio un error: " + err.message, "error");
     } finally {
-        mostrarEstado(productoEditando ? "GUARDAR CAMBIOS" : "PUBLICAR EN LA WEB");
-        btn.disabled = false;
+        setPublicando(false, productoEditando ? "GUARDAR CAMBIOS" : "PUBLICAR EN LA WEB");
     }
 });
 
