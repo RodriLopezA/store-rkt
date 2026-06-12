@@ -255,12 +255,11 @@ function configurarPreviewFotos() {
 
 function actualizarPrecioPreview() {
     const inputPrecio = document.getElementById('precio');
-    const inputDescuento = document.getElementById('descuento');
     const previewPrecio = document.getElementById('precio-preview');
     if (!inputPrecio || !previewPrecio) return;
 
     const precio = Number(inputPrecio.value || 0);
-    const descuento = Math.min(90, Math.max(0, Number(inputDescuento?.value || 0)));
+    const descuento = obtenerDescuentoFormulario();
     const precioAnterior = descuento > 0
         ? Math.round(precio / (1 - descuento / 100))
         : 0;
@@ -270,6 +269,15 @@ function actualizarPrecioPreview() {
         : precio > 0
         ? `$ ${precio.toLocaleString('es-AR')}`
         : '$ 0';
+}
+
+function obtenerDescuentoFormulario() {
+    const input = document.getElementById('descuento');
+    const valorCrudo = String(input?.value || '').trim();
+    const valor = valorCrudo === '' ? 0 : Number(valorCrudo);
+
+    if (!Number.isFinite(valor) || valor <= 0) return 0;
+    return Math.min(90, Math.round(valor));
 }
 
 function configurarPrecioPreview() {
@@ -540,10 +548,10 @@ form.addEventListener('submit', async (e) => {
 
     const nombre = document.getElementById('nombre').value;
     const precio = Number(document.getElementById('precio').value);
-    const descuentoPorcentaje = Math.min(90, Math.max(0, Number(document.getElementById('descuento').value || 0)));
+    const descuentoPorcentaje = obtenerDescuentoFormulario();
     const precioAnterior = descuentoPorcentaje > 0
         ? Math.round(precio / (1 - descuentoPorcentaje / 100))
-        : null;
+        : 0;
     const nuevoIngreso = document.getElementById('nuevo-ingreso').checked;
     const categoria = document.getElementById('categoria').value;
     const talles = document.getElementById('talles').value;
@@ -660,7 +668,17 @@ form.addEventListener('submit', async (e) => {
 
     } catch (err) {
         console.error(err);
-        mostrarToast("Ocurrio un error: " + err.message, "error");
+        const mensaje = String(err.message || '');
+        const faltaColumnaDescuento = mensaje.includes('descuento')
+            || mensaje.includes('precio_anterior')
+            || mensaje.includes('nuevo_ingreso');
+
+        mostrarToast(
+            faltaColumnaDescuento
+                ? "Faltan columnas de descuento en Supabase. Pega el SQL supabase-descuentos-badges.sql."
+                : "Ocurrio un error: " + mensaje,
+            "error"
+        );
     } finally {
         setPublicando(false, productoEditando ? "GUARDAR CAMBIOS" : "PUBLICAR EN LA WEB");
     }
