@@ -811,7 +811,7 @@ function renderizarDetalleProducto() {
             </div>
 
             <p class="detalle-desc">
-                Prenda urbana seleccionada para el catalogo. Consulta disponibilidad, talle y forma de entrega antes de cerrar la compra.
+                Prenda urbana seleccionada por IMPORTADOS RKT. Confirmamos stock, talle, color y forma de entrega por WhatsApp antes de cerrar la compra.
             </p>
 
             <div class="detalle-tags">
@@ -839,14 +839,19 @@ function renderizarDetalleProducto() {
 
             <span class="detalle-alerta">${producto.stock === false ? 'Sin stock' : (alertaStock || 'Ultimas unidades')}</span>
 
-            <button class="detalle-cta" type="button" id="detalle-consultar" ${producto.stock === false ? 'disabled' : ''}>
-                ${producto.stock === false ? 'Agotado' : 'Agregar al carrito'}
-            </button>
+            <div class="detalle-actions">
+                <button class="detalle-cta" type="button" id="detalle-consultar" ${producto.stock === false ? 'disabled' : ''}>
+                    ${producto.stock === false ? 'Agotado' : 'Agregar al carrito'}
+                </button>
+                <button class="detalle-cta detalle-whatsapp" type="button" id="detalle-whatsapp" ${producto.stock === false ? 'disabled' : ''}>
+                    Consultar por WhatsApp
+                </button>
+            </div>
 
             <div class="detalle-beneficios">
                 <div>
                     <strong>Envio coordinado</strong>
-                    <span>Entrega o retiro segun zona disponible</span>
+                    <span>Entrega o retiro en La Plata segun zona disponible</span>
                 </div>
                 <div>
                     <strong>Cambios faciles</strong>
@@ -871,7 +876,7 @@ function renderizarDetalleProducto() {
                 <p>${producto.nombre}.</p>
                 <p>Categoria: ${producto.categoria || 'Producto urbano'}.</p>
                 ${colores.length ? `<p>Colores o detalles: ${colores.join(', ')}.</p>` : ''}
-                <p>Producto disponible para consultar por WhatsApp antes de comprar.</p>
+                <p>Producto disponible para consultar por WhatsApp antes de comprar. El total no incluye envio salvo que se indique expresamente.</p>
                 <strong>SKU: ${generarSku(producto.nombre)}</strong>
             </div>
 
@@ -913,6 +918,7 @@ function configurarDetalleAcciones(producto, precio) {
     const menos = document.getElementById('cantidad-menos');
     const mas = document.getElementById('cantidad-mas');
     const consultar = document.getElementById('detalle-consultar');
+    const whatsapp = document.getElementById('detalle-whatsapp');
 
     menos.addEventListener('click', () => {
         const actual = Number(cantidadValor.innerText);
@@ -939,6 +945,15 @@ function configurarDetalleAcciones(producto, precio) {
             cantidad,
             imagen: imagenes[0] || producto.imagen_url
         });
+    });
+
+    whatsapp?.addEventListener('click', () => {
+        const talle = document.getElementById('detalle-talle').value;
+        const color = document.getElementById('detalle-color')?.value;
+        const cantidad = cantidadValor.innerText;
+        const detalleColor = color ? `\nColor/detalle: ${color}` : '';
+        const mensaje = `Hola. Quiero consultar stock de este producto:\n\n${producto.nombre}\nTalle: ${talle}${detalleColor}\nCantidad: ${cantidad}\nPrecio: $${Number(precio || 0).toLocaleString('es-AR')}\n\nMe confirman disponibilidad, envio o retiro en La Plata?`;
+        window.open(`https://wa.me/${NUMERO_WSP}?text=${encodeURIComponent(mensaje)}`, '_blank');
     });
 }
 
