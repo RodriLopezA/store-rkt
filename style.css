@@ -47,25 +47,26 @@ button {
     border: 1px solid rgba(255, 255, 255, 0.22);
     background: rgba(8, 8, 8, 0.22);
     backdrop-filter: blur(14px);
-    position: absolute;
+    position: fixed;
     top: 18px;
     left: 24px;
     z-index: 30;
-    transition: opacity 0.25s ease, transform 0.25s ease, background 0.25s ease;
+    transition: top 0.22s ease, left 0.22s ease, width 0.22s ease, background 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
 }
 
 .hero-header {
-    position: absolute;
+    position: fixed;
 }
 
 .catalog-header {
+    display: none;
+}
+
+.catalog-page .catalog-header {
     width: 100%;
     top: 0;
     left: 0;
-    position: fixed;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(-18px);
+    display: grid;
     border: 0;
     border-bottom: 1px solid #d9d9d2;
     background: rgba(255, 255, 255, 0.96);
@@ -73,15 +74,13 @@ button {
 }
 
 body.scrolled .hero-header {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(-18px);
-}
-
-body.scrolled .catalog-header {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
+    width: 100%;
+    top: 0;
+    left: 0;
+    border: 0;
+    border-bottom: 1px solid #d9d9d2;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
 }
 
 .brand {
@@ -96,7 +95,11 @@ body.scrolled .catalog-header {
 .catalog-header .brand,
 .catalog-header .nav-link,
 .catalog-header .cat-link,
-.catalog-header .admin-link {
+ .catalog-header .admin-link,
+body.scrolled .hero-header .brand,
+body.scrolled .hero-header .nav-link,
+body.scrolled .hero-header .cat-link,
+body.scrolled .hero-header .admin-link {
     color: #050505;
 }
 
@@ -252,11 +255,49 @@ body.scrolled .catalog-header {
     background: #c8ff00;
 }
 
+.hero-scroll-cue {
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 50%;
+    bottom: 22px;
+    z-index: 3;
+    transform: translateX(-50%);
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 24px;
+    font-weight: 900;
+    opacity: 0.86;
+    animation: scroll-cue 1.25s ease-in-out infinite;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+body.scrolled .hero-scroll-cue {
+    opacity: 0;
+    pointer-events: none;
+    transform: translate(-50%, 12px);
+}
+
+@keyframes scroll-cue {
+    0%, 100% {
+        transform: translate(-50%, 0);
+        opacity: 0.55;
+    }
+
+    50% {
+        transform: translate(-50%, 8px);
+        opacity: 1;
+    }
+}
+
 .featured-section {
     width: 100%;
     margin: 0 auto;
     padding: 48px 4vw 58px;
-    background: #050505;
+    background: #f7f7f2;
     scroll-margin-top: 110px;
 }
 
@@ -266,7 +307,7 @@ body.scrolled .catalog-header {
 }
 
 .section-heading h2 {
-    color: #ffffff;
+    color: #050505;
     font-size: clamp(32px, 4vw, 46px);
     font-weight: 900;
     text-transform: uppercase;
@@ -274,7 +315,7 @@ body.scrolled .catalog-header {
 
 .section-heading p {
     margin-top: 10px;
-    color: #a8a8a8;
+    color: #6b6b6b;
     font-size: 18px;
     font-weight: 600;
 }
@@ -284,44 +325,6 @@ body.scrolled .catalog-header {
     margin: 0 auto;
     grid-template-columns: repeat(4, minmax(180px, 1fr));
     gap: 30px;
-}
-
-.featured-section .mensaje-alerta {
-    color: #ffffff;
-}
-
-.featured-section .producto-card {
-    background: #0d0d0d;
-    border-color: #161616;
-}
-
-.featured-section .producto-info {
-    color: #ffffff;
-}
-
-.featured-section .prod-cat {
-    color: #8f8f8f;
-}
-
-.featured-section .prod-nom,
-.featured-section .prod-precio,
-.featured-section .stock-badge {
-    color: #ffffff;
-}
-
-.featured-section .prod-cuotas {
-    color: #c8ff00;
-}
-
-.featured-section .talle-btn {
-    background: #111111;
-    color: #ffffff;
-    border-color: #2a2a2a;
-}
-
-.featured-section .talle-btn.selected {
-    background: #ffffff;
-    color: #050505;
 }
 
 .catalog-shell {
