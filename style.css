@@ -254,14 +254,14 @@ button {
 .producto-card {
     min-width: 0;
     background: #ffffff;
-    border: 1px solid #deded8;
+    border: 1px solid #c8c8bf;
     position: relative;
     transition: transform 0.18s ease, box-shadow 0.18s ease;
 }
 
 .producto-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 10px 22px rgba(0, 0, 0, 0.1);
 }
 
 .producto-card:hover .producto-img {
@@ -272,7 +272,7 @@ button {
     width: 100%;
     aspect-ratio: 1 / 1;
     background: #ececea;
-    border-bottom: 1px solid #e5e5df;
+    border-bottom: 1px solid #d6d6cf;
     overflow: hidden;
     position: relative;
 }
