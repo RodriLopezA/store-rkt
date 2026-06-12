@@ -567,7 +567,6 @@ function renderizarCards(lista, grid) {
         const alertaStock = obtenerAlertaStock(prod);
         const colores = obtenerListaTexto(prod.colores);
         const precio = Number(prod.precio || 0);
-        const cuotas = Math.ceil(precio / 6);
 
         const tallesHTML = talles.map((t, index) =>
             `<button class="talle-btn ${index === 0 ? 'selected' : ''}" onclick="seleccionarTalle(this)">${t.trim()}</button>`
@@ -583,6 +582,9 @@ function renderizarCards(lista, grid) {
             : '';
         const videoHTML = videoProducto
             ? `<video class="producto-video-hover" src="${videoProducto}" muted loop playsinline preload="none"></video>`
+            : '';
+        const imagenHoverHTML = !videoProducto && imagenes[1]
+            ? `<img class="producto-img-hover" src="${imagenes[1]}" alt="${prod.nombre} segunda foto" loading="lazy">`
             : '';
         const alertaStockHTML = alertaStock && prod.stock !== false
             ? `<span class="stock-alerta">${alertaStock}</span>`
@@ -604,6 +606,7 @@ function renderizarCards(lista, grid) {
                     <div class="card-slider-track">
                         ${imagenesHTML}
                     </div>
+                    ${imagenHoverHTML}
                     ${videoHTML}
                     ${imagenes.length > 1 ? `
                         <button class="card-slide-btn card-slide-prev" type="button" aria-label="Foto anterior">‹</button>
@@ -617,9 +620,7 @@ function renderizarCards(lista, grid) {
                 <h3 class="prod-nom">${prod.nombre}</h3>
                 ${variantesHTML}
                 <span class="prod-precio">$${precio.toLocaleString('es-AR')}</span>
-                <span class="prod-cuotas">6 cuotas sin interes de $${cuotas.toLocaleString('es-AR')}</span>
                 <div class="prod-badges">
-                    <span class="mini-badge">Gratis</span>
                     <span class="stock-badge">${prod.stock === false ? 'Sin stock' : 'Stock disponible'}</span>
                 </div>
                 ${alertaStockHTML}
