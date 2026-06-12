@@ -89,6 +89,24 @@ function mostrarMensajeCarga(contenedor, mensaje) {
     contenedor.innerText = mensaje;
 }
 
+function configurarHeroVideo() {
+    const hero = document.querySelector('.hero-inicio');
+    const video = document.querySelector('.hero-video');
+    if (!hero || !video) return;
+
+    const videoSrc = video.dataset.src || video.getAttribute('src');
+    if (!videoSrc) return;
+
+    if (!video.getAttribute('src')) {
+        video.src = videoSrc;
+    }
+
+    hero.classList.add('has-video');
+    video.play().catch(() => {
+        hero.classList.remove('has-video');
+    });
+}
+
 function leerCarrito() {
     try {
         return JSON.parse(localStorage.getItem(CARRITO_KEY)) || [];
@@ -421,6 +439,52 @@ function obtenerImagenesProducto(producto) {
     return [producto.imagen_url].filter(Boolean).slice(0, 3);
 }
 
+function obtenerVideoProducto(producto) {
+    if (producto.video_url) return producto.video_url;
+
+    if (Array.isArray(producto.videos_urls) && producto.videos_urls.length) {
+        return producto.videos_urls.find(Boolean) || '';
+    }
+
+    if (typeof producto.videos_urls === 'string' && producto.videos_urls.trim()) {
+        try {
+            const videosParseados = JSON.parse(producto.videos_urls);
+            if (Array.isArray(videosParseados)) return videosParseados.find(Boolean) || '';
+        } catch (error) {
+            return producto.videos_urls;
+        }
+    }
+
+    return '';
+}
+
+function obtenerAlertaStock(producto) {
+    const stockTalles = producto.stock_talles || producto.stock_por_talle || producto.stockTalles;
+    let mapaStock = stockTalles;
+
+    if (typeof stockTalles === 'string' && stockTalles.trim()) {
+        try {
+            mapaStock = JSON.parse(stockTalles);
+        } catch (error) {
+            return '';
+        }
+    }
+
+    if (!mapaStock || typeof mapaStock !== 'object' || Array.isArray(mapaStock)) {
+        return '';
+    }
+
+    const talleEscaso = Object.entries(mapaStock).find(([, cantidad]) => {
+        const numero = Number(cantidad);
+        return numero > 0 && numero <= 2;
+    });
+
+    if (!talleEscaso) return '';
+
+    const [talle, cantidad] = talleEscaso;
+    return `Quedan ${cantidad} en talle ${talle}`;
+}
+
 function obtenerListaTexto(valor) {
     return String(valor || '')
         .split(',')
@@ -499,6 +563,8 @@ function renderizarCards(lista, grid) {
         const arrayTalles = obtenerListaTexto(prod.talles);
         const talles = arrayTalles.length ? arrayTalles : ['U'];
         const imagenes = obtenerImagenesProducto(prod);
+        const videoProducto = obtenerVideoProducto(prod);
+        const alertaStock = obtenerAlertaStock(prod);
         const colores = obtenerListaTexto(prod.colores);
         const precio = Number(prod.precio || 0);
         const cuotas = Math.ceil(precio / 6);
@@ -514,6 +580,12 @@ function renderizarCards(lista, grid) {
             : '';
         const variantesHTML = colores.length
             ? `<div class="prod-variantes">${colores.map((color) => `<span>${color}</span>`).join('')}</div>`
+            : '';
+        const videoHTML = videoProducto
+            ? `<video class="producto-video-hover" src="${videoProducto}" muted loop playsinline preload="none"></video>`
+            : '';
+        const alertaStockHTML = alertaStock && prod.stock !== false
+            ? `<span class="stock-alerta">${alertaStock}</span>`
             : '';
 
         const card = document.createElement('article');
@@ -532,6 +604,7 @@ function renderizarCards(lista, grid) {
                     <div class="card-slider-track">
                         ${imagenesHTML}
                     </div>
+                    ${videoHTML}
                     ${imagenes.length > 1 ? `
                         <button class="card-slide-btn card-slide-prev" type="button" aria-label="Foto anterior">‹</button>
                         <button class="card-slide-btn card-slide-next" type="button" aria-label="Foto siguiente">›</button>
@@ -549,6 +622,7 @@ function renderizarCards(lista, grid) {
                     <span class="mini-badge">Gratis</span>
                     <span class="stock-badge">${prod.stock === false ? 'Sin stock' : 'Stock disponible'}</span>
                 </div>
+                ${alertaStockHTML}
                 <div class="talles-grid">${tallesHTML}</div>
                 <button class="btn-wsp" ${prod.stock === false ? 'disabled' : ''} onclick="agregarProductoDesdeCard(this)">
                     ${prod.stock === false ? 'Agotado' : 'Agregar al carrito'}
@@ -568,6 +642,21 @@ function renderizarCards(lista, grid) {
 
         grid.appendChild(card);
         configurarCardSlider(card);
+        configurarCardVideo(card);
+    });
+}
+
+function configurarCardVideo(card) {
+    const video = card.querySelector('.producto-video-hover');
+    if (!video) return;
+
+    card.addEventListener('mouseenter', () => {
+        video.play().catch(() => {});
+    });
+
+    card.addEventListener('mouseleave', () => {
+        video.pause();
+        video.currentTime = 0;
     });
 }
 
@@ -634,6 +723,7 @@ function renderizarDetalleProducto() {
     const precio = Number(producto.precio || 0);
     const precioAnterior = Math.round(precio * 1.25);
     const imagenes = obtenerImagenesProducto(producto);
+    const alertaStock = obtenerAlertaStock(producto);
     const talles = obtenerListaTexto(producto.talles).length ? obtenerListaTexto(producto.talles) : ['U'];
     const colores = obtenerListaTexto(producto.colores);
     const tallesOptions = talles.map((talle) => `<option value="${talle}">${talle}</option>`).join('');
@@ -695,7 +785,7 @@ function renderizarDetalleProducto() {
                 <button type="button" id="cantidad-mas">+</button>
             </div>
 
-            <span class="detalle-alerta">${producto.stock === false ? 'Sin stock' : 'Ultimas unidades'}</span>
+            <span class="detalle-alerta">${producto.stock === false ? 'Sin stock' : (alertaStock || 'Ultimas unidades')}</span>
 
             <button class="detalle-cta" type="button" id="detalle-consultar" ${producto.stock === false ? 'disabled' : ''}>
                 ${producto.stock === false ? 'Agotado' : 'Agregar al carrito'}
@@ -969,6 +1059,7 @@ function configurarHeaderScroll() {
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    configurarHeroVideo();
     crearCarritoUI();
     configurarHeaderScroll();
     configurarFiltros();
