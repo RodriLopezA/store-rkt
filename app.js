@@ -151,7 +151,7 @@ function crearCarritoUI() {
                     <span>Tu compra</span>
                     <strong>Carrito</strong>
                 </div>
-                <button type="button" id="cart-close" aria-label="Cerrar carrito">Ã—</button>
+                <button type="button" id="cart-close" aria-label="Cerrar carrito">&times;</button>
             </div>
 
             <div class="cart-items" id="cart-items"></div>
@@ -236,10 +236,10 @@ function renderizarCarrito() {
             <img src="${escaparAtributo(item.imagen || '')}" alt="${escaparAtributo(item.nombre)}">
             <div>
                 <strong>${item.nombre}</strong>
-                <span>Talle: ${item.talle || 'U'}${item.color ? ` Â· ${item.color}` : ''}</span>
+                <span>Talle: ${item.talle || 'U'}${item.color ? ` &middot; ${item.color}` : ''}</span>
                 <small>$${Number(item.precio || 0).toLocaleString('es-AR')} c/u</small>
                 <div class="cart-qty">
-                    <button type="button" data-accion="menos" data-key="${escaparAtributo(item.key)}">âˆ’</button>
+                    <button type="button" data-accion="menos" data-key="${escaparAtributo(item.key)}">&minus;</button>
                     <b>${item.cantidad}</b>
                     <button type="button" data-accion="mas" data-key="${escaparAtributo(item.key)}">+</button>
                     <button type="button" data-accion="eliminar" data-key="${escaparAtributo(item.key)}">Quitar</button>
@@ -775,8 +775,8 @@ function renderizarCards(lista, grid) {
                     ${imagenHoverHTML}
                     ${videoHTML}
                     ${imagenes.length > 1 ? `
-                        <button class="card-slide-btn card-slide-prev" type="button" aria-label="Foto anterior">â€¹</button>
-                        <button class="card-slide-btn card-slide-next" type="button" aria-label="Foto siguiente">â€º</button>
+                        <button class="card-slide-btn card-slide-prev" type="button" aria-label="Foto anterior">&lsaquo;</button>
+                        <button class="card-slide-btn card-slide-next" type="button" aria-label="Foto siguiente">&rsaquo;</button>
                     ` : ''}
                     ${dotsHTML}
                 </div>
@@ -928,7 +928,7 @@ function renderizarDetalleProducto() {
             </div>
 
             <h1>${producto.nombre}</h1>
-            <p class="detalle-rating">â˜… 0.0 Â· 0 reseÃ±as de la comunidad</p>
+            <p class="detalle-rating">&#9733; 0.0 &middot; 0 resenas de la comunidad</p>
 
             <div class="detalle-precios">
                 <strong>$${precio.toLocaleString('es-AR')}</strong>
@@ -957,7 +957,7 @@ function renderizarDetalleProducto() {
 
             <span class="detalle-label">Cantidad</span>
             <div class="detalle-cantidad">
-                <button type="button" id="cantidad-menos">âˆ’</button>
+                <button type="button" id="cantidad-menos">&minus;</button>
                 <strong id="cantidad-valor">1</strong>
                 <button type="button" id="cantidad-mas">+</button>
             </div>

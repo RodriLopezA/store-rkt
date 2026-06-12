@@ -290,9 +290,9 @@ function renderizarPreviewFotos() {
         <article class="preview-foto">
             <img src="${obtenerSrcPreviewFoto(foto)}" alt="Foto seleccionada ${index + 1}">
             <div class="preview-foto-actions">
-                <button class="preview-move" type="button" data-accion="izquierda" data-index="${index}" aria-label="Mover foto a la izquierda" ${index === 0 ? 'disabled' : ''}>‹</button>
-                <button class="preview-remove" type="button" data-accion="quitar" data-index="${index}" aria-label="Quitar foto">×</button>
-                <button class="preview-move" type="button" data-accion="derecha" data-index="${index}" aria-label="Mover foto a la derecha" ${index === fotosSeleccionadas.length - 1 ? 'disabled' : ''}>›</button>
+                <button class="preview-move" type="button" data-accion="izquierda" data-index="${index}" aria-label="Mover foto a la izquierda" ${index === 0 ? 'disabled' : ''}>&lsaquo;</button>
+                <button class="preview-remove" type="button" data-accion="quitar" data-index="${index}" aria-label="Quitar foto">&times;</button>
+                <button class="preview-move" type="button" data-accion="derecha" data-index="${index}" aria-label="Mover foto a la derecha" ${index === fotosSeleccionadas.length - 1 ? 'disabled' : ''}>&rsaquo;</button>
             </div>
             <span>${index + 1}</span>
         </article>
@@ -810,8 +810,8 @@ form.addEventListener('submit', async (e) => {
         }
 
         const mensajeExito = productoEditando
-            ? "ðŸš€ Â¡Producto actualizado con Ã©xito!"
-            : "ðŸš€ Â¡Producto publicado con Ã©xito!";
+            ? "Producto actualizado con exito."
+            : "Producto publicado con exito.";
         mostrarToast(mensajeExito);
         productoEditando = null;
         form.reset();
