@@ -85,12 +85,58 @@
 
             <div class="grupo-input">
                 <label>CATEGORIA</label>
-                <select id="categoria">
-                    <option value="conjuntos">CONJUNTOS</option>
-                    <option value="buzos">BUZOS / CAMPERAS</option>
-                    <option value="joggings">JOGGINGS / PANTALONES</option>
-                    <option value="remeras">REMERAS</option>
-                </select>
+                <input type="hidden" id="categoria" value="conjuntos" required>
+                <div class="categoria-selector" id="categoria-selector" aria-label="Seleccionar categoria">
+                    <section>
+                        <strong>Conjuntos</strong>
+                        <div>
+                            <button type="button" class="selected" data-categoria-admin="conjuntos">Conjuntos</button>
+                        </div>
+                    </section>
+                    <section>
+                        <strong>Partes de arriba</strong>
+                        <div>
+                            <button type="button" data-categoria-admin="remeras">Remeras</button>
+                            <button type="button" data-categoria-admin="chombas">Chombas</button>
+                            <button type="button" data-categoria-admin="buzos">Buzos</button>
+                            <button type="button" data-categoria-admin="hoodies">Hoodies</button>
+                            <button type="button" data-categoria-admin="camperas">Camperas</button>
+                            <button type="button" data-categoria-admin="rompevientos">Rompevientos</button>
+                            <button type="button" data-categoria-admin="chalecos">Chalecos</button>
+                        </div>
+                    </section>
+                    <section>
+                        <strong>Partes de abajo</strong>
+                        <div>
+                            <button type="button" data-categoria-admin="pantalones">Pantalones</button>
+                            <button type="button" data-categoria-admin="joggings">Joggings</button>
+                            <button type="button" data-categoria-admin="jeans">Jeans</button>
+                            <button type="button" data-categoria-admin="bermudas">Bermudas</button>
+                            <button type="button" data-categoria-admin="cortos">Cortos</button>
+                        </div>
+                    </section>
+                    <section>
+                        <strong>Accesorios</strong>
+                        <div>
+                            <button type="button" data-categoria-admin="medias">Medias</button>
+                            <button type="button" data-categoria-admin="rinonera">Rinoneras</button>
+                            <button type="button" data-categoria-admin="bandoleras">Bandoleras</button>
+                            <button type="button" data-categoria-admin="cadenas">Cadenas</button>
+                            <button type="button" data-categoria-admin="guantes">Guantes</button>
+                        </div>
+                    </section>
+                    <section>
+                        <strong>Cabeza e importados</strong>
+                        <div>
+                            <button type="button" data-categoria-admin="viseras">Viseras</button>
+                            <button type="button" data-categoria-admin="gorros">Gorros</button>
+                            <button type="button" data-categoria-admin="caps">Caps</button>
+                            <button type="button" data-categoria-admin="pilusos">Pilusos</button>
+                            <button type="button" data-categoria-admin="importados">Importados</button>
+                        </div>
+                    </section>
+                </div>
+                <small class="input-ayuda" id="categoria-preview">Se va a mostrar tambien en: remeras, pantalones, joggings</small>
             </div>
 
             <div class="grupo-input">

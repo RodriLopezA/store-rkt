@@ -173,6 +173,69 @@ function normalizarCategoria(categoria) {
     return String(categoria || 'sin categoria').trim().toLowerCase();
 }
 
+const CATEGORIAS_RELACIONADAS = {
+    conjuntos: ['remeras', 'pantalones', 'joggings'],
+    remeras: ['partes-arriba'],
+    chombas: ['remeras', 'partes-arriba'],
+    buzos: ['hoodies', 'partes-arriba'],
+    hoodies: ['buzos', 'partes-arriba'],
+    camperas: ['rompevientos', 'partes-arriba'],
+    rompevientos: ['camperas', 'partes-arriba'],
+    chalecos: ['camperas', 'partes-arriba'],
+    pantalones: ['joggings', 'partes-abajo'],
+    joggings: ['pantalones', 'partes-abajo'],
+    jeans: ['pantalones', 'partes-abajo'],
+    bermudas: ['cortos', 'pantalones', 'partes-abajo'],
+    cortos: ['bermudas', 'pantalones', 'partes-abajo'],
+    rinonera: ['accesorios'],
+    bandoleras: ['rinonera', 'accesorios'],
+    cadenas: ['accesorios'],
+    medias: ['accesorios'],
+    guantes: ['accesorios'],
+    viseras: ['gorras-viceras', 'caps'],
+    gorros: ['gorras-viceras', 'caps'],
+    caps: ['gorras-viceras', 'viseras'],
+    pilusos: ['gorras-viceras', 'gorros'],
+    importados: []
+};
+
+function obtenerCategoriasAutomaticas(categoria) {
+    const principal = normalizarCategoria(categoria);
+    return [...new Set([principal, ...(CATEGORIAS_RELACIONADAS[principal] || [])])];
+}
+
+function sincronizarCategoriaSeleccionada(categoria = 'conjuntos') {
+    const inputCategoria = document.getElementById('categoria');
+    const previewCategoria = document.getElementById('categoria-preview');
+    const valor = normalizarCategoria(categoria || 'conjuntos');
+    const categoriasAuto = obtenerCategoriasAutomaticas(valor).filter((cat) => cat !== valor);
+
+    if (inputCategoria) inputCategoria.value = valor;
+
+    document.querySelectorAll('[data-categoria-admin]').forEach((boton) => {
+        boton.classList.toggle('selected', boton.dataset.categoriaAdmin === valor);
+    });
+
+    if (previewCategoria) {
+        previewCategoria.innerText = categoriasAuto.length
+            ? `Se va a mostrar tambien en: ${categoriasAuto.join(', ')}`
+            : 'Se va a mostrar solo en esta categoria.';
+    }
+}
+
+function configurarCategoriaSelector() {
+    const selector = document.getElementById('categoria-selector');
+    if (!selector) return;
+
+    selector.addEventListener('click', (event) => {
+        const boton = event.target.closest('[data-categoria-admin]');
+        if (!boton) return;
+        sincronizarCategoriaSeleccionada(boton.dataset.categoriaAdmin);
+    });
+
+    sincronizarCategoriaSeleccionada(document.getElementById('categoria')?.value || 'conjuntos');
+}
+
 function renderizarMetricas(productos) {
     const activas = productos.filter((prod) => prod.stock !== false);
     const categorias = activas.reduce((acc, prod) => {
@@ -321,6 +384,7 @@ function resetearControlesGuiados() {
     document.querySelectorAll('#talles-selector button').forEach((boton) => {
         boton.classList.toggle('selected', ['XS', 'S', 'M', 'L', 'XL'].includes(boton.dataset.talle));
     });
+    sincronizarCategoriaSeleccionada('conjuntos');
     document.getElementById('descuento').value = '';
     document.getElementById('nuevo-ingreso').checked = true;
     sincronizarTallesSeleccionados();
@@ -380,7 +444,7 @@ function cargarProductoParaEditar(producto) {
     productoEditando = producto;
     document.getElementById('nombre').value = producto.nombre || '';
     document.getElementById('precio').value = producto.precio || '';
-    document.getElementById('categoria').value = producto.categoria || 'conjuntos';
+    sincronizarCategoriaSeleccionada(producto.categoria || 'conjuntos');
     document.getElementById('colores').value = producto.colores || '';
     document.getElementById('descuento').value = producto.descuento_porcentaje || '';
     document.getElementById('nuevo-ingreso').checked = producto.nuevo_ingreso !== false;
@@ -554,6 +618,7 @@ form.addEventListener('submit', async (e) => {
         : 0;
     const nuevoIngreso = document.getElementById('nuevo-ingreso').checked;
     const categoria = document.getElementById('categoria').value;
+    const categoriasBusqueda = obtenerCategoriasAutomaticas(categoria);
     const talles = document.getElementById('talles').value;
     const colores = document.getElementById('colores').value;
     const fotosArchivos = fotosSeleccionadas.length
@@ -624,6 +689,7 @@ form.addEventListener('submit', async (e) => {
             descuento: descuentoPorcentaje > 0,
             precio_anterior: precioAnterior,
             nuevo_ingreso: nuevoIngreso,
+            categorias_busqueda: categoriasBusqueda,
             imagen_url: urlsFotos[0],
             imagenes_urls: urlsFotos,
             stock: productoEditando ? productoEditando.stock !== false : true
@@ -686,5 +752,6 @@ form.addEventListener('submit', async (e) => {
 
 configurarPreviewFotos();
 configurarPrecioPreview();
+configurarCategoriaSelector();
 configurarTallesSelector();
 verificarSesion();

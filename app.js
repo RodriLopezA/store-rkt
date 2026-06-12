@@ -432,6 +432,30 @@ function normalizarCategoria(categoria) {
         .toLowerCase();
 }
 
+function obtenerCategoriasProducto(prod) {
+    const categorias = [normalizarCategoria(prod.categoria)];
+    const extras = prod.categorias_busqueda || prod.categorias || prod.tags_categorias;
+
+    if (Array.isArray(extras)) {
+        categorias.push(...extras.map(normalizarCategoria));
+    }
+
+    if (typeof extras === 'string' && extras.trim()) {
+        try {
+            const parsed = JSON.parse(extras);
+            if (Array.isArray(parsed)) {
+                categorias.push(...parsed.map(normalizarCategoria));
+            } else {
+                categorias.push(...extras.split(',').map(normalizarCategoria));
+            }
+        } catch (error) {
+            categorias.push(...extras.split(',').map(normalizarCategoria));
+        }
+    }
+
+    return [...new Set(categorias.filter(Boolean))];
+}
+
 function obtenerImagenesProducto(producto) {
     if (Array.isArray(producto.imagenes_urls) && producto.imagenes_urls.length) {
         return producto.imagenes_urls.filter(Boolean).slice(0, 3);
@@ -516,11 +540,14 @@ function aplicarFiltros() {
     let lista = [...productosData];
 
     if (categoriaActiva !== "todo") {
-        lista = lista.filter((prod) => normalizarCategoria(prod.categoria) === categoriaActiva);
+        lista = lista.filter((prod) => obtenerCategoriasProducto(prod).includes(categoriaActiva));
     }
 
     if (filtrosActivos.categorias.size) {
-        lista = lista.filter((prod) => filtrosActivos.categorias.has(normalizarCategoria(prod.categoria)));
+        lista = lista.filter((prod) => {
+            const categoriasProducto = obtenerCategoriasProducto(prod);
+            return [...filtrosActivos.categorias].some((cat) => categoriasProducto.includes(cat));
+        });
     }
 
     if (filtrosActivos.talles.size) {
