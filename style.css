@@ -1060,6 +1060,95 @@ body.scrolled .hero-scroll-cue {
     color: #050505;
 }
 
+.filters-panel {
+    gap: 10px;
+}
+
+.limpiar-filtros {
+    min-height: 44px;
+    border: 1px solid #050505;
+    background: #050505;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.filter-group {
+    border: 1px solid #d0d0c8;
+    background: #ffffff;
+}
+
+.filter-group .filter-accordion {
+    width: 100%;
+    border: 0;
+}
+
+.filter-accordion::after {
+    content: "+";
+}
+
+.filter-group.open .filter-accordion::after {
+    content: "-";
+}
+
+.filter-panel {
+    max-height: 0;
+    padding: 0 10px;
+    display: grid;
+    gap: 6px;
+    overflow: hidden;
+    transition: max-height 0.22s ease, padding 0.22s ease;
+}
+
+.filter-group.open .filter-panel {
+    max-height: 420px;
+    padding: 0 10px 12px;
+}
+
+.filter-panel button {
+    min-height: 36px;
+    border: 1px solid #dddddd;
+    background: #f7f7f2;
+    color: #111111;
+    text-align: left;
+    padding: 0 10px;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.filter-panel button.active {
+    background: #050505;
+    color: #ffffff;
+    border-color: #050505;
+}
+
+.talle-filter-grid,
+.color-filter-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.talle-filter-grid button {
+    aspect-ratio: 1 / 1;
+    padding: 0;
+    text-align: center;
+}
+
+.color-filter-grid button {
+    width: 34px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0;
+    justify-self: center;
+    border-radius: 50%;
+    background: var(--swatch);
+}
+
+.color-filter-grid button.active {
+    outline: 3px solid #050505;
+    outline-offset: 3px;
+}
+
 .catalog-content {
     min-width: 0;
 }
@@ -2653,8 +2742,8 @@ body.cart-open .cart-backdrop {
 
     .filters-panel {
         position: static;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        flex-direction: column;
         gap: 10px;
     }
 
@@ -2663,7 +2752,7 @@ body.cart-open .cart-backdrop {
     }
 
     .filter-accordion {
-        display: none;
+        display: flex;
     }
 
     .catalog-toolbar {

@@ -57,36 +57,103 @@
                 <option value="nombre">Nombre</option>
             </select>
 
-            <label class="switch-row">
-                <span>Retiro por sucursal</span>
-                <input type="checkbox">
-                <i></i>
-            </label>
+            <button type="button" class="limpiar-filtros" id="limpiar-filtros">Limpiar filtros</button>
 
-            <label class="switch-row">
-                <span>Envio a domicilio</span>
-                <input type="checkbox" checked>
-                <i></i>
-            </label>
+            <section class="filter-group open">
+                <button class="filter-accordion" type="button">Partes de Arriba</button>
+                <div class="filter-panel">
+                    <button type="button" data-filter-categoria="remeras">Remeras</button>
+                    <button type="button" data-filter-categoria="buzos">Buzos</button>
+                    <button type="button" data-filter-categoria="hoodies">Hoodies</button>
+                    <button type="button" data-filter-categoria="camperas">Camperas</button>
+                    <button type="button" data-filter-categoria="rompevientos">Rompevientos</button>
+                    <button type="button" data-filter-categoria="chalecos">Chalecos</button>
+                </div>
+            </section>
 
-            <button class="filter-accordion active" data-categoria="todo">Categoria de producto</button>
-            <button class="filter-accordion" data-categoria="conjuntos">Conjuntos</button>
-            <button class="filter-accordion" data-categoria="buzos">Buzos / Camperas</button>
-            <button class="filter-accordion" data-categoria="chalecos">Chalecos</button>
-            <button class="filter-accordion" data-categoria="camperas">Camperas</button>
-            <button class="filter-accordion" data-categoria="cortos">Cortos</button>
-            <button class="filter-accordion" data-categoria="rinonera">Riñonera</button>
-            <button class="filter-accordion" data-categoria="gorras-viceras">Gorras / Viceras</button>
-            <button class="filter-accordion" data-categoria="guantes">Guantes</button>
-            <button class="filter-accordion" data-categoria="importados">Importados</button>
-            <button class="filter-accordion" data-categoria="remeras">Remeras</button>
-            <button class="filter-accordion" data-categoria="chombas">Chombas</button>
-            <button class="filter-accordion" data-categoria="jeans">Jeans</button>
-            <button class="filter-accordion" data-categoria="bermudas">Bermudas</button>
-            <button class="filter-accordion" data-categoria="joggings">Joggings / Pantalones</button>
-            <button class="filter-accordion">Talle</button>
-            <button class="filter-accordion">Precio</button>
-            <button class="filter-accordion">Color</button>
+            <section class="filter-group">
+                <button class="filter-accordion" type="button">Partes de Abajo</button>
+                <div class="filter-panel">
+                    <button type="button" data-filter-categoria="pantalones">Pantalones</button>
+                    <button type="button" data-filter-categoria="joggings">Joggers</button>
+                    <button type="button" data-filter-categoria="bermudas">Bermudas</button>
+                    <button type="button" data-filter-categoria="cortos">Shorts</button>
+                    <button type="button" data-filter-categoria="jeans">Baggy Jeans</button>
+                </div>
+            </section>
+
+            <section class="filter-group">
+                <button class="filter-accordion" type="button">Accesorios</button>
+                <div class="filter-panel">
+                    <button type="button" data-filter-categoria="medias">Medias</button>
+                    <button type="button" data-filter-categoria="rinonera">Riñoneras</button>
+                    <button type="button" data-filter-categoria="bandoleras">Bandoleras</button>
+                    <button type="button" data-filter-categoria="cadenas">Cadenas</button>
+                </div>
+            </section>
+
+            <section class="filter-group">
+                <button class="filter-accordion" type="button">Cabeza</button>
+                <div class="filter-panel">
+                    <button type="button" data-filter-categoria="viseras">Viseras</button>
+                    <button type="button" data-filter-categoria="gorros">Gorros de lana</button>
+                    <button type="button" data-filter-categoria="caps">Caps</button>
+                    <button type="button" data-filter-categoria="pilusos">Pilusos</button>
+                </div>
+            </section>
+
+            <section class="filter-group">
+                <button class="filter-accordion" type="button">Talle</button>
+                <div class="filter-panel talle-filter-grid">
+                    <button type="button" data-filter-talle="XS">XS</button>
+                    <button type="button" data-filter-talle="S">S</button>
+                    <button type="button" data-filter-talle="M">M</button>
+                    <button type="button" data-filter-talle="L">L</button>
+                    <button type="button" data-filter-talle="XL">XL</button>
+                    <button type="button" data-filter-talle="XXL">XXL</button>
+                    <button type="button" data-filter-talle="U">U</button>
+                    <button type="button" data-filter-talle="42">42</button>
+                </div>
+            </section>
+
+            <section class="filter-group">
+                <button class="filter-accordion" type="button">Color</button>
+                <div class="filter-panel color-filter-grid">
+                    <button type="button" data-filter-color="negro" style="--swatch:#050505" aria-label="Negro"></button>
+                    <button type="button" data-filter-color="blanco" style="--swatch:#ffffff" aria-label="Blanco"></button>
+                    <button type="button" data-filter-color="gris" style="--swatch:#8a8a8a" aria-label="Gris"></button>
+                    <button type="button" data-filter-color="azul" style="--swatch:#1646a3" aria-label="Azul"></button>
+                    <button type="button" data-filter-color="rojo" style="--swatch:#bd1f2d" aria-label="Rojo"></button>
+                    <button type="button" data-filter-color="verde" style="--swatch:#287338" aria-label="Verde"></button>
+                    <button type="button" data-filter-color="beige" style="--swatch:#d8c49a" aria-label="Beige"></button>
+                    <button type="button" data-filter-color="marron" style="--swatch:#6b3e21" aria-label="Marron"></button>
+                </div>
+            </section>
+
+            <section class="filter-group">
+                <button class="filter-accordion" type="button">Precio</button>
+                <div class="filter-panel">
+                    <button type="button" data-filter-precio="0-30000">Hasta $30.000</button>
+                    <button type="button" data-filter-precio="30000-60000">$30.000 a $60.000</button>
+                    <button type="button" data-filter-precio="60000-999999999">Mas de $60.000</button>
+                </div>
+            </section>
+
+            <section class="filter-group">
+                <button class="filter-accordion" type="button">Descuento</button>
+                <div class="filter-panel">
+                    <button type="button" data-filter-descuento="true">Con descuento</button>
+                </div>
+            </section>
+
+            <section class="filter-group">
+                <button class="filter-accordion" type="button">Genero</button>
+                <div class="filter-panel">
+                    <button type="button" data-filter-genero="hombre">Hombre</button>
+                    <button type="button" data-filter-genero="mujer">Mujer</button>
+                    <button type="button" data-filter-genero="unisex">Unisex</button>
+                </div>
+            </section>
         </aside>
 
         <section class="catalog-content">

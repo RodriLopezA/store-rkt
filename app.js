@@ -10,6 +10,14 @@ let productosData = [];
 let categoriaActiva = "todo";
 let ordenActivo = "relevantes";
 let busquedaActiva = "";
+let filtrosActivos = {
+    categorias: new Set(),
+    talles: new Set(),
+    colores: new Set(),
+    precio: "",
+    descuento: false,
+    genero: ""
+};
 let paginaActual = 0;
 let hayMasProductos = true;
 let cargandoProductos = false;
@@ -505,6 +513,43 @@ function aplicarFiltros() {
 
     if (categoriaActiva !== "todo") {
         lista = lista.filter((prod) => normalizarCategoria(prod.categoria) === categoriaActiva);
+    }
+
+    if (filtrosActivos.categorias.size) {
+        lista = lista.filter((prod) => filtrosActivos.categorias.has(normalizarCategoria(prod.categoria)));
+    }
+
+    if (filtrosActivos.talles.size) {
+        lista = lista.filter((prod) => {
+            const tallesProducto = obtenerListaTexto(prod.talles).map((talle) => talle.toUpperCase());
+            return [...filtrosActivos.talles].some((talle) => tallesProducto.includes(talle));
+        });
+    }
+
+    if (filtrosActivos.colores.size) {
+        lista = lista.filter((prod) => {
+            const coloresProducto = obtenerListaTexto(prod.colores).map((color) => normalizarCategoria(color));
+            return [...filtrosActivos.colores].some((color) => coloresProducto.includes(color));
+        });
+    }
+
+    if (filtrosActivos.precio) {
+        const [min, max] = filtrosActivos.precio.split('-').map(Number);
+        lista = lista.filter((prod) => {
+            const precio = Number(prod.precio || 0);
+            return precio >= min && precio <= max;
+        });
+    }
+
+    if (filtrosActivos.descuento) {
+        lista = lista.filter((prod) => prod.descuento || prod.oferta || Number(prod.precio_anterior || 0) > Number(prod.precio || 0));
+    }
+
+    if (filtrosActivos.genero) {
+        lista = lista.filter((prod) => {
+            const textoGenero = `${prod.genero || ''} ${prod.nombre || ''} ${prod.categoria || ''}`.toLowerCase();
+            return textoGenero.includes(filtrosActivos.genero);
+        });
     }
 
     if (busquedaActiva) {
@@ -1046,6 +1091,82 @@ function configurarFiltros() {
     if (btnVerMas) {
         btnVerMas.addEventListener('click', () => cargarPaginaProductos());
     }
+
+    document.querySelectorAll('.filter-group .filter-accordion').forEach((boton) => {
+        boton.addEventListener('click', () => {
+            boton.closest('.filter-group').classList.toggle('open');
+        });
+    });
+
+    document.querySelectorAll('[data-filter-categoria]').forEach((boton) => {
+        boton.addEventListener('click', () => {
+            const valor = boton.dataset.filterCategoria;
+            boton.classList.toggle('active');
+            filtrosActivos.categorias[boton.classList.contains('active') ? 'add' : 'delete'](valor);
+            categoriaActiva = "todo";
+            botonesCategoria.forEach((item) => item.classList.remove('active'));
+            aplicarFiltros();
+        });
+    });
+
+    document.querySelectorAll('[data-filter-talle]').forEach((boton) => {
+        boton.addEventListener('click', () => {
+            const valor = boton.dataset.filterTalle.toUpperCase();
+            boton.classList.toggle('active');
+            filtrosActivos.talles[boton.classList.contains('active') ? 'add' : 'delete'](valor);
+            aplicarFiltros();
+        });
+    });
+
+    document.querySelectorAll('[data-filter-color]').forEach((boton) => {
+        boton.addEventListener('click', () => {
+            const valor = normalizarCategoria(boton.dataset.filterColor);
+            boton.classList.toggle('active');
+            filtrosActivos.colores[boton.classList.contains('active') ? 'add' : 'delete'](valor);
+            aplicarFiltros();
+        });
+    });
+
+    document.querySelectorAll('[data-filter-precio]').forEach((boton) => {
+        boton.addEventListener('click', () => {
+            document.querySelectorAll('[data-filter-precio]').forEach((item) => item.classList.remove('active'));
+            filtrosActivos.precio = filtrosActivos.precio === boton.dataset.filterPrecio ? "" : boton.dataset.filterPrecio;
+            boton.classList.toggle('active', Boolean(filtrosActivos.precio));
+            aplicarFiltros();
+        });
+    });
+
+    document.querySelectorAll('[data-filter-descuento]').forEach((boton) => {
+        boton.addEventListener('click', () => {
+            filtrosActivos.descuento = !filtrosActivos.descuento;
+            boton.classList.toggle('active', filtrosActivos.descuento);
+            aplicarFiltros();
+        });
+    });
+
+    document.querySelectorAll('[data-filter-genero]').forEach((boton) => {
+        boton.addEventListener('click', () => {
+            document.querySelectorAll('[data-filter-genero]').forEach((item) => item.classList.remove('active'));
+            filtrosActivos.genero = filtrosActivos.genero === boton.dataset.filterGenero ? "" : boton.dataset.filterGenero;
+            boton.classList.toggle('active', Boolean(filtrosActivos.genero));
+            aplicarFiltros();
+        });
+    });
+
+    document.getElementById('limpiar-filtros')?.addEventListener('click', () => {
+        filtrosActivos = {
+            categorias: new Set(),
+            talles: new Set(),
+            colores: new Set(),
+            precio: "",
+            descuento: false,
+            genero: ""
+        };
+        categoriaActiva = "todo";
+        document.querySelectorAll('.filter-panel button, [data-categoria]').forEach((boton) => boton.classList.remove('active'));
+        document.querySelectorAll('[data-categoria="todo"]').forEach((boton) => boton.classList.add('active'));
+        aplicarFiltros();
+    });
 }
 
 function configurarHeaderScroll() {
