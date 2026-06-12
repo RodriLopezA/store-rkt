@@ -12,6 +12,7 @@ const productosAdmin = document.getElementById('admin-productos');
 const PESO_MAXIMO_IMAGEN = 100 * 1024;
 const ANCHO_MAXIMO_IMAGEN = 800;
 const CALIDAD_INICIAL_IMAGEN = 0.7;
+const MAX_FOTOS_PRODUCTO = 3;
 
 function mostrarEstado(mensaje) {
     const btn = document.getElementById('btn-publicar');
@@ -103,6 +104,33 @@ function obtenerPathStorage(imagenUrl) {
     return decodeURIComponent(imagenUrl.slice(indice + marcador.length));
 }
 
+function obtenerImagenesProducto(producto) {
+    if (Array.isArray(producto.imagenes_urls) && producto.imagenes_urls.length) {
+        return producto.imagenes_urls.filter(Boolean);
+    }
+
+    if (typeof producto.imagenes_urls === 'string' && producto.imagenes_urls.trim()) {
+        try {
+            const imagenesParseadas = JSON.parse(producto.imagenes_urls);
+            if (Array.isArray(imagenesParseadas) && imagenesParseadas.length) {
+                return imagenesParseadas.filter(Boolean);
+            }
+        } catch (error) {
+            return [producto.imagenes_urls, producto.imagen_url].filter(Boolean);
+        }
+    }
+
+    return [producto.imagen_url].filter(Boolean);
+}
+
+function escaparAtributo(valor) {
+    return String(valor || '')
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
 async function cargarProductosAdmin() {
     productosAdmin.innerHTML = Array.from({ length: 4 }, () => `
         <article class="admin-producto admin-producto-skeleton" aria-hidden="true">
@@ -133,22 +161,30 @@ async function cargarProductosAdmin() {
         return;
     }
 
-    productosAdmin.innerHTML = data.map((prod) => `
+    productosAdmin.innerHTML = data.map((prod) => {
+        const imagenes = obtenerImagenesProducto(prod);
+        const imagenPrincipal = imagenes[0] || prod.imagen_url || '';
+        const detalleFotos = `${imagenes.length} foto${imagenes.length === 1 ? '' : 's'}`;
+        const detalleColores = prod.colores ? ` · ${prod.colores}` : '';
+
+        return `
         <article class="admin-producto ${prod.stock === false ? 'sin-stock' : ''}">
-            <img src="${prod.imagen_url}" alt="${prod.nombre}">
+            <img src="${imagenPrincipal}" alt="${prod.nombre}">
             <div>
                 <strong>${prod.nombre}</strong>
                 <span>${prod.categoria || 'sin categoria'} · $${Number(prod.precio || 0).toLocaleString('es-AR')}</span>
+                <span>${detalleFotos}${detalleColores}</span>
                 <small>${prod.stock === false ? 'SIN STOCK' : 'EN STOCK'}</small>
             </div>
             <button type="button" data-accion="stock" data-id="${prod.id}" data-stock="${prod.stock === false ? 'true' : 'false'}">
                 ${prod.stock === false ? 'Reactivar' : 'Sin stock'}
             </button>
-            <button type="button" data-accion="borrar" data-id="${prod.id}" data-imagen="${prod.imagen_url}">
+            <button type="button" data-accion="borrar" data-id="${prod.id}" data-imagenes="${escaparAtributo(JSON.stringify(imagenes))}">
                 Borrar
             </button>
         </article>
-    `).join('');
+    `;
+    }).join('');
 }
 
 formLogin.addEventListener('submit', async (e) => {
@@ -208,11 +244,14 @@ productosAdmin.addEventListener('click', async (e) => {
     }
 
     if (boton.dataset.accion === 'borrar') {
-        const confirmar = confirm("Seguro que queres borrar este producto y su foto?");
+        const confirmar = confirm("Seguro que queres borrar este producto y sus fotos?");
         if (!confirmar) return;
 
         boton.disabled = true;
-        const pathStorage = obtenerPathStorage(boton.dataset.imagen);
+        const imagenes = JSON.parse(boton.dataset.imagenes || '[]');
+        const pathsStorage = imagenes
+            .map((imagen) => obtenerPathStorage(imagen))
+            .filter(Boolean);
 
         const { error: dbError } = await supabaseClient
             .from('productos')
@@ -225,13 +264,13 @@ productosAdmin.addEventListener('click', async (e) => {
             return;
         }
 
-        if (pathStorage) {
+        if (pathsStorage.length) {
             const { error: storageError } = await supabaseClient.storage
                 .from(BUCKET_FOTOS)
-                .remove([pathStorage]);
+                .remove(pathsStorage);
 
             if (storageError) {
-                console.warn("Producto borrado, pero no se pudo borrar la foto:", storageError);
+                console.warn("Producto borrado, pero no se pudieron borrar todas las fotos:", storageError);
             }
         }
 
@@ -250,7 +289,8 @@ form.addEventListener('submit', async (e) => {
     const precio = Number(document.getElementById('precio').value);
     const categoria = document.getElementById('categoria').value;
     const talles = document.getElementById('talles').value;
-    const fotoArchivo = document.getElementById('foto').files[0];
+    const colores = document.getElementById('colores').value;
+    const fotosArchivos = Array.from(document.getElementById('foto').files);
 
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();
@@ -258,36 +298,46 @@ form.addEventListener('submit', async (e) => {
             throw new Error("Tenes que iniciar sesion para publicar.");
         }
 
-        if (!fotoArchivo) {
-            throw new Error("Selecciona una foto antes de publicar.");
+        if (!fotosArchivos.length) {
+            throw new Error("Selecciona al menos una foto antes de publicar.");
         }
 
-        mostrarEstado("Comprimiendo foto...");
-        const fotoComprimida = await comprimirImagen(fotoArchivo);
-
-        if (!fotoComprimida) {
-            throw new Error("No se pudo comprimir la imagen por debajo de 100KB. Proba con otra foto.");
+        if (fotosArchivos.length > MAX_FOTOS_PRODUCTO) {
+            throw new Error(`Selecciona como maximo ${MAX_FOTOS_PRODUCTO} fotos por producto.`);
         }
 
-        const nombreBase = fotoArchivo.name
-            .replace(/\.[^/.]+$/, '')
-            .replace(/\s+/g, '-')
-            .replace(/[^a-zA-Z0-9-_]/g, '');
-        const nombreImagen = `${Date.now()}-${nombreBase || 'producto'}.${fotoComprimida.extension}`;
+        const urlsFotos = [];
 
-        mostrarEstado("Subiendo ropa...");
-        const { error: uploadError } = await supabaseClient.storage
-            .from(BUCKET_FOTOS)
-            .upload(nombreImagen, fotoComprimida.blob, {
-                contentType: fotoComprimida.contentType,
-                upsert: false
-            });
+        for (const [index, fotoArchivo] of fotosArchivos.entries()) {
+            mostrarEstado(`Comprimiendo foto ${index + 1}/${fotosArchivos.length}...`);
+            const fotoComprimida = await comprimirImagen(fotoArchivo);
 
-        if (uploadError) throw uploadError;
+            if (!fotoComprimida) {
+                throw new Error(`No se pudo comprimir la foto ${index + 1} por debajo de 100KB. Proba con otra foto.`);
+            }
 
-        const { data: urlData } = supabaseClient.storage
-            .from(BUCKET_FOTOS)
-            .getPublicUrl(nombreImagen);
+            const nombreBase = fotoArchivo.name
+                .replace(/\.[^/.]+$/, '')
+                .replace(/\s+/g, '-')
+                .replace(/[^a-zA-Z0-9-_]/g, '');
+            const nombreImagen = `${Date.now()}-${index + 1}-${nombreBase || 'producto'}.${fotoComprimida.extension}`;
+
+            mostrarEstado(`Subiendo foto ${index + 1}/${fotosArchivos.length}...`);
+            const { error: uploadError } = await supabaseClient.storage
+                .from(BUCKET_FOTOS)
+                .upload(nombreImagen, fotoComprimida.blob, {
+                    contentType: fotoComprimida.contentType,
+                    upsert: false
+                });
+
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = supabaseClient.storage
+                .from(BUCKET_FOTOS)
+                .getPublicUrl(nombreImagen);
+
+            urlsFotos.push(urlData.publicUrl);
+        }
 
         mostrarEstado("Guardando producto...");
         const { error: dbError } = await supabaseClient
@@ -298,7 +348,9 @@ form.addEventListener('submit', async (e) => {
                     precio,
                     categoria,
                     talles,
-                    imagen_url: urlData.publicUrl,
+                    colores,
+                    imagen_url: urlsFotos[0],
+                    imagenes_urls: urlsFotos,
                     stock: true
                 }
             ]);

@@ -200,6 +200,32 @@ function normalizarCategoria(categoria) {
         .toLowerCase();
 }
 
+function obtenerImagenesProducto(producto) {
+    if (Array.isArray(producto.imagenes_urls) && producto.imagenes_urls.length) {
+        return producto.imagenes_urls.filter(Boolean).slice(0, 3);
+    }
+
+    if (typeof producto.imagenes_urls === 'string' && producto.imagenes_urls.trim()) {
+        try {
+            const imagenesParseadas = JSON.parse(producto.imagenes_urls);
+            if (Array.isArray(imagenesParseadas) && imagenesParseadas.length) {
+                return imagenesParseadas.filter(Boolean).slice(0, 3);
+            }
+        } catch (error) {
+            return [producto.imagenes_urls, producto.imagen_url].filter(Boolean).slice(0, 3);
+        }
+    }
+
+    return [producto.imagen_url].filter(Boolean).slice(0, 3);
+}
+
+function obtenerListaTexto(valor) {
+    return String(valor || '')
+        .split(',')
+        .map((item) => item.trim())
+        .filter(Boolean);
+}
+
 function aplicarFiltros() {
     let lista = [...productosData];
 
@@ -209,7 +235,7 @@ function aplicarFiltros() {
 
     if (busquedaActiva) {
         lista = lista.filter((prod) => {
-            const textoProducto = `${prod.nombre || ''} ${prod.categoria || ''} ${prod.talles || ''}`.toLowerCase();
+            const textoProducto = `${prod.nombre || ''} ${prod.categoria || ''} ${prod.talles || ''} ${prod.colores || ''}`.toLowerCase();
             return textoProducto.includes(busquedaActiva);
         });
     }
@@ -260,13 +286,25 @@ function renderizarDestacados(lista) {
 
 function renderizarCards(lista, grid) {
     lista.forEach((prod) => {
-        const arrayTalles = prod.talles ? prod.talles.split(',') : ['U'];
+        const arrayTalles = obtenerListaTexto(prod.talles);
+        const talles = arrayTalles.length ? arrayTalles : ['U'];
+        const imagenes = obtenerImagenesProducto(prod);
+        const colores = obtenerListaTexto(prod.colores);
         const precio = Number(prod.precio || 0);
         const cuotas = Math.ceil(precio / 6);
 
-        const tallesHTML = arrayTalles.map((t, index) =>
+        const tallesHTML = talles.map((t, index) =>
             `<button class="talle-btn ${index === 0 ? 'selected' : ''}" onclick="seleccionarTalle(this)">${t.trim()}</button>`
         ).join('');
+        const imagenesHTML = imagenes.map((imagen, index) =>
+            `<img class="producto-img" src="${imagen}" alt="${prod.nombre} foto ${index + 1}" loading="lazy">`
+        ).join('');
+        const dotsHTML = imagenes.length > 1
+            ? `<div class="card-slider-dots">${imagenes.map((_, index) => `<span class="${index === 0 ? 'active' : ''}"></span>`).join('')}</div>`
+            : '';
+        const variantesHTML = colores.length
+            ? `<div class="prod-variantes">${colores.map((color) => `<span>${color}</span>`).join('')}</div>`
+            : '';
 
         const card = document.createElement('article');
         card.className = 'producto-card';
@@ -275,11 +313,21 @@ function renderizarCards(lista, grid) {
             <div class="img-contenedor">
                 <span class="badge-rkt ${prod.stock === false ? 'agotado' : ''}">${prod.stock === false ? 'Agotado' : 'Nuevo ingreso'}</span>
                 <button class="fav-btn" type="button" aria-label="Agregar a favoritos">&hearts;</button>
-                <img class="producto-img" src="${prod.imagen_url}" alt="${prod.nombre}" loading="lazy">
+                <div class="card-slider" data-slide="0">
+                    <div class="card-slider-track">
+                        ${imagenesHTML}
+                    </div>
+                    ${imagenes.length > 1 ? `
+                        <button class="card-slide-btn card-slide-prev" type="button" aria-label="Foto anterior">‹</button>
+                        <button class="card-slide-btn card-slide-next" type="button" aria-label="Foto siguiente">›</button>
+                    ` : ''}
+                    ${dotsHTML}
+                </div>
             </div>
             <div class="producto-info">
                 <span class="prod-cat">${prod.categoria || 'Producto'}</span>
                 <h3 class="prod-nom">${prod.nombre}</h3>
+                ${variantesHTML}
                 <span class="prod-precio">$${precio.toLocaleString('es-AR')}</span>
                 <span class="prod-cuotas">6 cuotas sin interes de $${cuotas.toLocaleString('es-AR')}</span>
                 <div class="prod-badges">
@@ -304,7 +352,42 @@ function renderizarCards(lista, grid) {
         });
 
         grid.appendChild(card);
+        configurarCardSlider(card);
     });
+}
+
+function configurarCardSlider(card) {
+    const slider = card.querySelector('.card-slider');
+    const track = card.querySelector('.card-slider-track');
+    const dots = card.querySelectorAll('.card-slider-dots span');
+    if (!slider || !track || !dots.length) return;
+
+    const moverA = (indice) => {
+        const total = dots.length;
+        const siguiente = (indice + total) % total;
+        slider.dataset.slide = String(siguiente);
+        track.scrollTo({
+            left: track.clientWidth * siguiente,
+            behavior: 'smooth'
+        });
+        dots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === siguiente));
+    };
+
+    card.querySelector('.card-slide-prev')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        moverA(Number(slider.dataset.slide || 0) - 1);
+    });
+
+    card.querySelector('.card-slide-next')?.addEventListener('click', (event) => {
+        event.stopPropagation();
+        moverA(Number(slider.dataset.slide || 0) + 1);
+    });
+
+    track.addEventListener('scroll', () => {
+        const indice = Math.round(track.scrollLeft / Math.max(1, track.clientWidth));
+        slider.dataset.slide = String(indice);
+        dots.forEach((dot, dotIndex) => dot.classList.toggle('active', dotIndex === indice));
+    }, { passive: true });
 }
 
 function obtenerUrlProducto(prod) {
@@ -335,17 +418,24 @@ function renderizarDetalleProducto() {
 
     const precio = Number(producto.precio || 0);
     const precioAnterior = Math.round(precio * 1.25);
-    const talles = producto.talles ? producto.talles.split(',').map((t) => t.trim()).filter(Boolean) : ['U'];
+    const imagenes = obtenerImagenesProducto(producto);
+    const talles = obtenerListaTexto(producto.talles).length ? obtenerListaTexto(producto.talles) : ['U'];
+    const colores = obtenerListaTexto(producto.colores);
     const tallesOptions = talles.map((talle) => `<option value="${talle}">${talle}</option>`).join('');
+    const coloresOptions = colores.map((color) => `<option value="${color}">${color}</option>`).join('');
+    const miniaturasHTML = imagenes.map((imagen, index) => `
+        <button type="button" class="${index === 0 ? 'active' : ''}" data-imagen="${imagen}">
+            <img src="${imagen}" alt="${producto.nombre} foto ${index + 1}">
+        </button>
+    `).join('');
 
     contenedor.innerHTML = `
         <section class="detalle-media">
             <div class="detalle-img-principal">
-                <img src="${producto.imagen_url}" alt="${producto.nombre}">
+                <img id="detalle-imagen-activa" src="${imagenes[0] || producto.imagen_url}" alt="${producto.nombre}">
             </div>
             <div class="detalle-miniaturas">
-                <button type="button" class="active"><img src="${producto.imagen_url}" alt="${producto.nombre}"></button>
-                <button type="button"><img src="${producto.imagen_url}" alt="${producto.nombre}"></button>
+                ${miniaturasHTML}
             </div>
         </section>
 
@@ -377,6 +467,11 @@ function renderizarDetalleProducto() {
 
             <label class="detalle-label" for="detalle-talle">Talle</label>
             <select id="detalle-talle" class="detalle-select">${tallesOptions}</select>
+
+            ${colores.length ? `
+                <label class="detalle-label" for="detalle-color">Color / detalle</label>
+                <select id="detalle-color" class="detalle-select">${coloresOptions}</select>
+            ` : ''}
 
             <span class="detalle-label">Cantidad</span>
             <div class="detalle-cantidad">
@@ -418,6 +513,7 @@ function renderizarDetalleProducto() {
             <div class="detalle-tab-panel active" id="tab-descripcion">
                 <p>${producto.nombre}.</p>
                 <p>Categoria: ${producto.categoria || 'Producto urbano'}.</p>
+                ${colores.length ? `<p>Colores o detalles: ${colores.join(', ')}.</p>` : ''}
                 <p>Producto disponible para consultar por WhatsApp antes de comprar.</p>
                 <strong>SKU: ${generarSku(producto.nombre)}</strong>
             </div>
@@ -442,6 +538,7 @@ function renderizarDetalleProducto() {
     `;
 
     configurarDetalleAcciones(producto, precio);
+    configurarDetalleGaleria();
     configurarDetalleTabs();
     renderizarRelacionados(producto);
 }
@@ -472,9 +569,25 @@ function configurarDetalleAcciones(producto, precio) {
 
     consultar.addEventListener('click', () => {
         const talle = document.getElementById('detalle-talle').value;
+        const color = document.getElementById('detalle-color')?.value;
         const cantidad = cantidadValor.innerText;
-        const textoMensaje = `Hola. Quiero consultar por este producto:\n\nProducto: ${producto.nombre}\nTalle: ${talle}\nCantidad: ${cantidad}\nPrecio: $${Number(precio).toLocaleString('es-AR')}\n\nSigue disponible?`;
+        const colorTexto = color ? `\nColor/detalle: ${color}` : '';
+        const textoMensaje = `Hola. Quiero consultar por este producto:\n\nProducto: ${producto.nombre}\nTalle: ${talle}${colorTexto}\nCantidad: ${cantidad}\nPrecio: $${Number(precio).toLocaleString('es-AR')}\n\nSigue disponible?`;
         window.open(`https://wa.me/${NUMERO_WSP}?text=${encodeURIComponent(textoMensaje)}`, '_blank');
+    });
+}
+
+function configurarDetalleGaleria() {
+    const imagenActiva = document.getElementById('detalle-imagen-activa');
+    const miniaturas = document.querySelectorAll('.detalle-miniaturas button');
+    if (!imagenActiva || !miniaturas.length) return;
+
+    miniaturas.forEach((boton) => {
+        boton.addEventListener('click', () => {
+            imagenActiva.src = boton.dataset.imagen;
+            miniaturas.forEach((item) => item.classList.remove('active'));
+            boton.classList.add('active');
+        });
     });
 }
 
