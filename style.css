@@ -42,7 +42,7 @@ button {
     width: calc(100% - 48px);
     padding: 0 26px;
     display: grid;
-    grid-template-columns: 220px 1fr auto;
+    grid-template-columns: 220px minmax(420px, 1fr) 220px auto;
     align-items: center;
     border: 1px solid rgba(255, 255, 255, 0.22);
     background: rgba(8, 8, 8, 0.22);
@@ -107,7 +107,7 @@ body.scrolled .hero-header .admin-link {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 24px;
+    gap: 30px;
 }
 
 .nav-link,
@@ -116,10 +116,80 @@ body.scrolled .hero-header .admin-link {
     background: transparent;
     color: #ffffff;
     text-decoration: none;
-    font-size: 15px;
+    font-size: 14px;
     font-weight: 700;
     padding: 26px 2px 23px;
     border-bottom: 3px solid transparent;
+}
+
+.header-search {
+    justify-self: end;
+    width: 200px;
+}
+
+.header-search input {
+    width: 100%;
+    height: 40px;
+    padding: 0 14px 0 36px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 5px;
+    background:
+        linear-gradient(transparent, transparent),
+        rgba(0, 0, 0, 0.16);
+    color: #ffffff;
+    font-size: 14px;
+    outline: none;
+}
+
+.header-search {
+    position: relative;
+}
+
+.header-search::before {
+    content: "";
+    width: 14px;
+    height: 14px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.header-search::after {
+    content: "";
+    width: 7px;
+    height: 2px;
+    background: currentColor;
+    position: absolute;
+    left: 25px;
+    top: 27px;
+    transform: rotate(45deg);
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.header-search input::placeholder {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+body.scrolled .hero-header .header-search input,
+.catalog-header .header-search input {
+    border-color: #dddddd;
+    background: #ffffff;
+    color: #050505;
+}
+
+body.scrolled .hero-header .header-search input::placeholder,
+.catalog-header .header-search input::placeholder {
+    color: #777777;
+}
+
+body.scrolled .hero-header .header-search::before,
+body.scrolled .hero-header .header-search::after,
+.catalog-header .header-search::before,
+.catalog-header .header-search::after {
+    color: #555555;
 }
 
 .nav-link:hover,
@@ -181,6 +251,7 @@ body.scrolled .hero-header .admin-link {
     text-decoration: none;
     font-size: 14px;
     font-weight: 700;
+    justify-self: end;
 }
 
 .hero-inicio {
@@ -384,12 +455,12 @@ body.scrolled .hero-scroll-cue {
     justify-content: flex-end;
     position: relative;
     overflow: hidden;
-    background: #050505;
-    color: #ffffff;
+    background: #ffffff;
+    color: #050505;
     text-decoration: none;
-    border: 1px solid #777777;
+    border: 1px solid #d8d8d0;
     border-radius: 14px;
-    box-shadow: inset 0 0 0 4px rgba(255, 255, 255, 0.12), 0 18px 38px rgba(0, 0, 0, 0.16);
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.08);
 }
 
 .category-card svg {
@@ -398,7 +469,7 @@ body.scrolled .hero-scroll-cue {
     margin: 0 auto auto;
     display: block;
     fill: none;
-    stroke: rgba(255, 255, 255, 0.72);
+    stroke: #050505;
     stroke-width: 4;
     stroke-linecap: round;
     stroke-linejoin: round;
@@ -419,7 +490,7 @@ body.scrolled .hero-scroll-cue {
     display: inline-flex;
     align-items: center;
     gap: 14px;
-    background: #2c2c2c;
+    background: #050505;
     color: #ffffff;
     font-size: 13px;
     font-weight: 800;
@@ -427,7 +498,7 @@ body.scrolled .hero-scroll-cue {
 
 .category-card:hover svg {
     transform: translateY(-6px) scale(1.03);
-    stroke: #c8ff00;
+    stroke: #287338;
 }
 
 .category-card:hover span {
@@ -881,6 +952,19 @@ body.scrolled .hero-scroll-cue {
 }
 
 @media (max-width: 1100px) {
+    .site-header {
+        grid-template-columns: 180px minmax(320px, 1fr) 180px auto;
+        padding: 0 18px;
+    }
+
+    .main-nav {
+        gap: 18px;
+    }
+
+    .header-search {
+        width: 170px;
+    }
+
     .productos-grid {
         grid-template-columns: repeat(2, minmax(180px, 1fr));
     }
@@ -920,6 +1004,17 @@ body.scrolled .hero-scroll-cue {
         justify-content: flex-start;
         gap: 16px;
         overflow-x: auto;
+    }
+
+    .header-search {
+        grid-column: 1 / -1;
+        justify-self: stretch;
+        width: 100%;
+    }
+
+    .admin-link {
+        grid-column: 2;
+        grid-row: 1;
     }
 
     .nav-link,

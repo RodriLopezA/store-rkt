@@ -7,6 +7,7 @@ const NUMERO_WSP = "549221XXXXXXX";
 let productosData = [];
 let categoriaActiva = "todo";
 let ordenActivo = "relevantes";
+let busquedaActiva = "";
 
 async function obtenerProductos() {
     const loading = document.getElementById('loading');
@@ -47,6 +48,13 @@ function aplicarFiltros() {
 
     if (categoriaActiva !== "todo") {
         lista = lista.filter((prod) => normalizarCategoria(prod.categoria) === categoriaActiva);
+    }
+
+    if (busquedaActiva) {
+        lista = lista.filter((prod) => {
+            const textoProducto = `${prod.nombre || ''} ${prod.categoria || ''} ${prod.talles || ''}`.toLowerCase();
+            return textoProducto.includes(busquedaActiva);
+        });
     }
 
     if (ordenActivo === "menor-precio") {
@@ -154,9 +162,14 @@ function configurarFiltros() {
 
     const params = new URLSearchParams(window.location.search);
     const categoriaUrl = params.get('categoria');
+    const busquedaUrl = params.get('q');
     if (categoriaUrl) {
         categoriaActiva = categoriaUrl;
         botonesCategoria.forEach((boton) => boton.classList.remove('active'));
+    }
+
+    if (busquedaUrl) {
+        busquedaActiva = busquedaUrl.trim().toLowerCase();
     }
 
     botonesCategoria.forEach((boton) => {
