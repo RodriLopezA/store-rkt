@@ -3,33 +3,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tienda Urbana RKT</title>
+    <title>Urban RKT | Catalogo</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <!-- CDN de Supabase -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-    <div class="barra-anuncio">
-        🔥 ENVIOS A TODO EL BARRIO - CASCO URBANO - COORDINÁ AL WHATSAPP 🔥
+    <div class="top-service">
+        <span>Entregas</span>
+        <span>Cambios</span>
+        <span>Metodos de pago</span>
+        <span>Ayuda por WhatsApp</span>
     </div>
 
-    <header class="header-urbano">
-        <div class="logo">URBAN RKT</div>
-        <nav class="menu-categorias">
-            <a href="#" class="cat-link active">TODO</a>
-            <a href="#" class="cat-link">CONJUNTOS</a>
-            <a href="#" class="cat-link">BUZOS</a>
-            <a href="#" class="cat-link">JOGGINGS</a>
+    <header class="site-header">
+        <a class="brand" href="index.html">URBAN RKT</a>
+        <nav class="main-nav" aria-label="Categorias principales">
+            <button class="cat-link active" data-categoria="todo">Todo</button>
+            <button class="cat-link" data-categoria="conjuntos">Conjuntos</button>
+            <button class="cat-link" data-categoria="buzos">Buzos</button>
+            <button class="cat-link" data-categoria="joggings">Joggings</button>
         </nav>
+        <a class="admin-link" href="admin.html">Admin</a>
     </header>
 
-    <main class="contenedor-productos">
-        <div id="loading" class="mensaje-alerta">CARGANDO EL FLOW DE LA BASE DE DATOS...</div>
-        <div class="productos-grid" id="grid-productos">
-            <!-- Las tarjetas se generan dinámicamente con JS -->
+    <section class="delivery-strip">
+        <div>
+            <strong>6 cuotas sin interes</strong>
+            <span>En productos seleccionados</span>
         </div>
+        <div>
+            <strong>Envio gratis</strong>
+            <span>Coordinando por WhatsApp</span>
+        </div>
+        <div>
+            <strong>Stock actualizado</strong>
+            <span>Catalogo conectado a Supabase</span>
+        </div>
+    </section>
+
+    <main class="catalog-shell">
+        <aside class="filters-panel" aria-label="Filtros">
+            <select id="orden-productos" class="sort-select" aria-label="Ordenar productos">
+                <option value="relevantes">Mas relevantes</option>
+                <option value="menor-precio">Menor precio</option>
+                <option value="mayor-precio">Mayor precio</option>
+                <option value="nombre">Nombre</option>
+            </select>
+
+            <label class="switch-row">
+                <span>Retiro por sucursal</span>
+                <input type="checkbox">
+                <i></i>
+            </label>
+
+            <label class="switch-row">
+                <span>Envio a domicilio</span>
+                <input type="checkbox" checked>
+                <i></i>
+            </label>
+
+            <button class="filter-accordion" data-categoria="todo">Categoria de producto</button>
+            <button class="filter-accordion" data-categoria="conjuntos">Conjuntos</button>
+            <button class="filter-accordion" data-categoria="buzos">Buzos / Camperas</button>
+            <button class="filter-accordion" data-categoria="joggings">Joggings / Pantalones</button>
+            <button class="filter-accordion">Talle</button>
+            <button class="filter-accordion">Precio</button>
+            <button class="filter-accordion">Color</button>
+        </aside>
+
+        <section class="catalog-content">
+            <div class="catalog-toolbar">
+                <h1>Catalogo</h1>
+                <p><strong id="contador-productos">0</strong> resultados</p>
+            </div>
+
+            <div id="loading" class="mensaje-alerta">Cargando productos...</div>
+            <div class="productos-grid" id="grid-productos"></div>
+        </section>
     </main>
 
     <script src="app.js"></script>

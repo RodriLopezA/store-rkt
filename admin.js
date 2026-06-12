@@ -1,5 +1,6 @@
 const SUPABASE_URL = "https://zpyhryenaaiewbjzjmfg.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpweWhyeWVuYWFpZXdianpqbWZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjgyNTIsImV4cCI6MjA5NjgwNDI1Mn0.hzHO4eRH7xH_O1zo6_lBs9kbsImBNLnDxL23okgK9_g";
+const BUCKET_FOTOS = "fotos-ropa";
 let supabaseClient = null;
 
 const form = document.getElementById('form-panel');
@@ -116,16 +117,22 @@ form.addEventListener('submit', async (e) => {
 
         mostrarEstado("Subiendo ropa...");
         const { error: uploadError } = await supabase.storage
-            .from('fotos-ropa')
+            .from(BUCKET_FOTOS)
             .upload(nombreImagen, fotoComprimida, {
                 contentType: 'image/jpeg',
                 upsert: false
             });
 
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+            if (uploadError.message === "Bucket not found") {
+                throw new Error(`No existe el bucket "${BUCKET_FOTOS}" en Supabase Storage.`);
+            }
+
+            throw uploadError;
+        }
 
         const { data: urlData } = supabase.storage
-            .from('fotos-ropa')
+            .from(BUCKET_FOTOS)
             .getPublicUrl(nombreImagen);
 
         const urlFinalImagen = urlData.publicUrl;
