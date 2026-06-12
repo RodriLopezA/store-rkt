@@ -79,7 +79,7 @@ function renderizarGrid(lista) {
         card.className = 'producto-card';
         card.innerHTML = `
             <div class="img-contenedor">
-                <span class="badge-rkt">Nuevo</span>
+                <span class="badge-rkt">Nuevo ingreso</span>
                 <button class="fav-btn" type="button" aria-label="Agregar a favoritos">&hearts;</button>
                 <img class="producto-img" src="${prod.imagen_url}" alt="${prod.nombre}" loading="lazy">
             </div>
@@ -90,10 +90,10 @@ function renderizarGrid(lista) {
                 <span class="prod-cuotas">6 cuotas sin interes de $${cuotas.toLocaleString('es-AR')}</span>
                 <div class="prod-badges">
                     <span class="mini-badge">Gratis</span>
-                    <span class="stock-badge">Stock para envio</span>
+                    <span class="stock-badge">Stock disponible</span>
                 </div>
                 <div class="talles-grid">${tallesHTML}</div>
-                <button class="btn-wsp" onclick="enviarPedido('${escaparTexto(prod.nombre)}', '${precio}', this)">Pedir por WhatsApp</button>
+                <button class="btn-wsp" onclick="enviarPedido('${escaparTexto(prod.nombre)}', '${precio}', this)">Consultar por WhatsApp</button>
             </div>
         `;
         grid.appendChild(card);
