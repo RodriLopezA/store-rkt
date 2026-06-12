@@ -134,6 +134,10 @@ function configurarFiltros() {
             });
 
             aplicarFiltros();
+
+            if (boton.closest('.dropdown-menu')) {
+                document.getElementById('catalogo').scrollIntoView({ behavior: 'smooth' });
+            }
         });
     });
 

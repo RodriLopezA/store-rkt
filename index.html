@@ -3,30 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Urban RKT | Catalogo</title>
+    <title>Urban RKT | Indumentaria urbana</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
-    <div class="top-service">
-        <span>Indumentaria urbana</span>
-        <span>Deportivo RKT</span>
-        <span>Stock real</span>
-        <span>Compra por WhatsApp</span>
-    </div>
-
     <header class="site-header">
-        <a class="brand" href="index.html">URBAN RKT</a>
-        <nav class="main-nav" aria-label="Categorias principales">
-            <button class="cat-link active" data-categoria="todo">Todo</button>
-            <button class="cat-link" data-categoria="conjuntos">Conjuntos</button>
-            <button class="cat-link" data-categoria="buzos">Buzos</button>
-            <button class="cat-link" data-categoria="joggings">Joggings</button>
+        <a class="brand" href="#inicio">URBAN RKT</a>
+        <nav class="main-nav" aria-label="Navegacion principal">
+            <div class="nav-item has-dropdown">
+                <a class="nav-link" href="#inicio">Inicio</a>
+                <div class="dropdown-menu">
+                    <a href="#catalogo">Catalogo</a>
+                    <button type="button" data-categoria="todo">Todo</button>
+                    <button type="button" data-categoria="conjuntos">Conjuntos</button>
+                    <button type="button" data-categoria="buzos">Buzos</button>
+                    <button type="button" data-categoria="joggings">Joggings</button>
+                    <a href="#ofertas">Ofertas</a>
+                    <a href="#cambios">Cambios y devoluciones</a>
+                    <a href="#contacto">Contacto</a>
+                </div>
+            </div>
+            <a class="nav-link" href="#catalogo">Catalogo</a>
+            <a class="nav-link" href="#ofertas">Ofertas</a>
+            <a class="nav-link" href="#cambios">Cambios y devoluciones</a>
+            <a class="nav-link" href="#contacto">Contacto</a>
         </nav>
         <a class="admin-link" href="admin.html">Admin</a>
     </header>
+
+    <section class="hero-inicio" id="inicio">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <span class="hero-kicker">Deportivo RKT / Urbano de barrio</span>
+            <h1>Conjuntos, buzos y rompevientos con calle.</h1>
+            <p>Catalogo actualizado, stock real y atencion directa por WhatsApp.</p>
+            <a class="hero-btn" href="#catalogo">Ver catalogo</a>
+            <a class="hero-arrow" href="#catalogo" aria-label="Bajar al catalogo">&darr;</a>
+        </div>
+    </section>
 
     <section class="delivery-strip">
         <div>
@@ -43,7 +60,7 @@
         </div>
     </section>
 
-    <main class="catalog-shell">
+    <main class="catalog-shell" id="catalogo">
         <aside class="filters-panel" aria-label="Filtros">
             <select id="orden-productos" class="sort-select" aria-label="Ordenar productos">
                 <option value="relevantes">Mas relevantes</option>
@@ -64,7 +81,7 @@
                 <i></i>
             </label>
 
-            <button class="filter-accordion" data-categoria="todo">Categoria de producto</button>
+            <button class="filter-accordion active" data-categoria="todo">Categoria de producto</button>
             <button class="filter-accordion" data-categoria="conjuntos">Conjuntos</button>
             <button class="filter-accordion" data-categoria="buzos">Buzos / Camperas</button>
             <button class="filter-accordion" data-categoria="joggings">Joggings / Pantalones</button>
@@ -75,7 +92,7 @@
 
         <section class="catalog-content">
             <div class="catalog-toolbar">
-                <h1>Catalogo</h1>
+                <h2>Catalogo</h2>
                 <p><strong id="contador-productos">0</strong> resultados</p>
             </div>
 
@@ -83,6 +100,32 @@
             <div class="productos-grid" id="grid-productos"></div>
         </section>
     </main>
+
+    <section class="info-section ofertas-section" id="ofertas">
+        <div>
+            <span>Ofertas</span>
+            <h2>Promos urbanas por tiempo limitado.</h2>
+            <p>Publica precios especiales desde el panel y destacalos en el catalogo.</p>
+        </div>
+        <a href="#catalogo">Ver productos</a>
+    </section>
+
+    <section class="info-section" id="cambios">
+        <div>
+            <span>Cambios y devoluciones</span>
+            <h2>Compra con confianza.</h2>
+            <p>Coordinamos cambios por talle o producto disponible. La prenda debe estar sin uso y con el mismo estado de entrega.</p>
+        </div>
+    </section>
+
+    <section class="info-section contacto-section" id="contacto">
+        <div>
+            <span>Contacto</span>
+            <h2>Atencion directa por WhatsApp.</h2>
+            <p>Consultas de talles, stock, retiros y envios. Respuesta clara antes de cerrar la compra.</p>
+        </div>
+        <a href="https://wa.me/549221XXXXXXX" target="_blank" rel="noopener">Escribir ahora</a>
+    </section>
 
     <script src="app.js"></script>
 </body>
