@@ -4,7 +4,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const NUMERO_WSP = "5492215676073";
 const PRODUCTOS_POR_PAGINA = 12;
-const CARRITO_KEY = "urban_rkt_carrito";
+const CARRITO_KEY = "tienda_demo_carrito";
 
 let productosData = [];
 let categoriaActiva = "todo";
@@ -458,21 +458,21 @@ function obtenerCategoriasProducto(prod) {
 
 function obtenerImagenesProducto(producto) {
     if (Array.isArray(producto.imagenes_urls) && producto.imagenes_urls.length) {
-        return producto.imagenes_urls.filter(Boolean).slice(0, 3);
+        return producto.imagenes_urls.filter(Boolean).slice(0, 5);
     }
 
     if (typeof producto.imagenes_urls === 'string' && producto.imagenes_urls.trim()) {
         try {
             const imagenesParseadas = JSON.parse(producto.imagenes_urls);
             if (Array.isArray(imagenesParseadas) && imagenesParseadas.length) {
-                return imagenesParseadas.filter(Boolean).slice(0, 3);
+                return imagenesParseadas.filter(Boolean).slice(0, 5);
             }
         } catch (error) {
-            return [producto.imagenes_urls, producto.imagen_url].filter(Boolean).slice(0, 3);
+            return [producto.imagenes_urls, producto.imagen_url].filter(Boolean).slice(0, 5);
         }
     }
 
-    return [producto.imagen_url].filter(Boolean).slice(0, 3);
+    return [producto.imagen_url].filter(Boolean).slice(0, 5);
 }
 
 function obtenerVideoProducto(producto) {
@@ -552,10 +552,10 @@ function actualizarMeta(nombre, valor, atributo = 'property') {
 
 function actualizarMetasProducto(producto, imagen) {
     const precio = Number(producto.precio || 0);
-    const titulo = `${producto.nombre} | IMPORTADOS RKT`;
+    const titulo = `${producto.nombre} | TIENDA DEMO`;
     const descripcion = producto.descripcion
         ? String(producto.descripcion).slice(0, 155)
-        : `${producto.categoria || 'Producto urbano'} disponible en IMPORTADOS RKT. Precio: $${precio.toLocaleString('es-AR')}. Consulta stock y talle por WhatsApp.`;
+        : `${producto.categoria || 'Producto urbano'} disponible en TIENDA DEMO. Precio: $${precio.toLocaleString('es-AR')}. Consulta stock y talle por WhatsApp.`;
 
     document.title = titulo;
     actualizarMeta('description', descripcion, 'name');
@@ -569,7 +569,7 @@ function actualizarMetasProducto(producto, imagen) {
 
 function obtenerDescripcionProducto(producto) {
     return String(producto.descripcion || '').trim()
-        || 'Prenda urbana seleccionada por IMPORTADOS RKT. Confirmamos stock, talle, color y forma de entrega por WhatsApp antes de cerrar la compra.';
+        || 'Prenda urbana seleccionada por TIENDA DEMO. Confirmamos stock, talle, color y forma de entrega por WhatsApp antes de cerrar la compra.';
 }
 
 function obtenerGuiaTallesProducto(producto, talles) {
@@ -942,7 +942,7 @@ function renderizarDetalleProducto() {
             <div class="detalle-tags">
                 <span>${producto.categoria || 'URBANO'}</span>
                 <span>STOCK</span>
-                <span>RKT</span>
+                <span>urbana</span>
             </div>
 
             <div class="detalle-divider"></div>

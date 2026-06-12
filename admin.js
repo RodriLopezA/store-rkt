@@ -17,7 +17,7 @@ const btnCancelarBorrar = document.getElementById('btn-cancelar-borrar');
 const PESO_MAXIMO_IMAGEN = 100 * 1024;
 const ANCHO_MAXIMO_IMAGEN = 800;
 const CALIDAD_INICIAL_IMAGEN = 0.7;
-const MAX_FOTOS_PRODUCTO = 3;
+const MAX_FOTOS_PRODUCTO = 5;
 let fotosSeleccionadas = [];
 let productosAdminCache = [];
 let productoPendienteBorrar = null;
@@ -315,7 +315,7 @@ function configurarPreviewFotos() {
         renderizarPreviewFotos();
 
         if (nuevasFotos.length && fotosSeleccionadas.length === MAX_FOTOS_PRODUCTO) {
-            mostrarEstado("Maximo 3 fotos por producto");
+            mostrarEstado(`Maximo ${MAX_FOTOS_PRODUCTO} fotos por producto`);
             setTimeout(() => mostrarEstado("PUBLICAR EN LA WEB"), 1200);
         }
     });

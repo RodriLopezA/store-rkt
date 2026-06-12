@@ -2641,7 +2641,7 @@ body.cart-open .cart-backdrop {
 .preview-fotos {
     margin-top: 12px;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 10px;
 }
 
@@ -3360,6 +3360,10 @@ body.cart-open .cart-backdrop {
 
     .admin-color-selector {
         grid-template-columns: repeat(4, minmax(44px, 1fr));
+    }
+
+    .preview-fotos {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
     .categoria-selector {

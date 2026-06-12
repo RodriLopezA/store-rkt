@@ -1,7 +1,7 @@
-{
-  "name": "IMPORTADOS RKT",
-  "short_name": "RKT",
-  "description": "Indumentaria urbana y deportiva RKT en La Plata",
+﻿{
+  "name": "TIENDA DEMO",
+  "short_name": "urbana",
+  "description": "Indumentaria urbana y deportiva urbana en La Plata",
   "start_url": "index.html",
   "scope": "./",
   "display": "standalone",
