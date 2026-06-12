@@ -1,0 +1,243 @@
+/* RESET GENERAL */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Oswald', sans-serif;
+    background-color: #ffffff;
+    color: #000000;
+}
+
+/* CLIENTE VIEW */
+.barra-anuncio {
+    background-color: #000000;
+    color: #ffffff;
+    text-align: center;
+    padding: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.header-urbano {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 25px;
+    border-bottom: 3px solid #000000;
+}
+
+.logo {
+    font-size: 42px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    margin-bottom: 15px;
+}
+
+.menu-categorias a {
+    color: #666666;
+    text-decoration: none;
+    font-weight: bold;
+    margin: 0 15px;
+    font-size: 16px;
+    letter-spacing: 1px;
+    transition: color 0.2s;
+}
+
+.menu-categorias a.active, .menu-categorias a:hover {
+    color: #000000;
+    border-bottom: 2px solid #000000;
+}
+
+.contenedor-productos {
+    padding: 30px 15px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.mensaje-alerta {
+    text-align: center;
+    font-size: 18px;
+    padding: 40px;
+}
+
+.productos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+/* TARJETA DE ROPA */
+.producto-card {
+    background: #ffffff;
+    border: 3px solid #000000;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.producto-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 6px 6px 0px #000000;
+}
+
+.badge-rkt {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background-color: #ccff00;
+    color: #000000;
+    font-weight: bold;
+    padding: 4px 10px;
+    font-size: 12px;
+    border: 2px solid #000000;
+    z-index: 5;
+}
+
+.img-contenedor {
+    width: 100%;
+    height: 340px;
+    overflow: hidden;
+    background-color: #f5f5f5;
+    border-bottom: 3px solid #000000;
+}
+
+.img-contenedor img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.producto-info {
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.prod-cat {
+    font-size: 11px;
+    color: #777777;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.prod-nom {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 5px 0 10px 0;
+    text-transform: uppercase;
+}
+
+.prod-precio {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.talles-grid {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 15px;
+}
+
+.talle-btn {
+    border: 2px solid #000000;
+    background: #ffffff;
+    padding: 4px 8px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.talle-btn.selected {
+    background: #000000;
+    color: #ffffff;
+}
+
+.btn-wsp {
+    background: #000000;
+    color: #ffffff;
+    border: none;
+    padding: 12px;
+    font-family: 'Oswald', sans-serif;
+    font-weight: bold;
+    font-size: 16px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin-top: auto;
+    transition: background 0.2s;
+}
+
+.btn-wsp:hover {
+    background: #ccff00;
+    color: #000000;
+}
+
+/* ADMIN STYLES */
+.bg-admin {
+    background-color: #f0f0f0;
+    padding: 20px;
+}
+
+.admin-container {
+    background: #ffffff;
+    border: 4px solid #000000;
+    max-width: 550px;
+    margin: 40px auto;
+    padding: 30px;
+    box-shadow: 10px 10px 0px #000000;
+}
+
+.admin-container h1 {
+    font-size: 28px;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.sub-admin {
+    text-align: center;
+    color: #666;
+    margin-bottom: 25px;
+}
+
+.grupo-input {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.grupo-input label {
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.grupo-input input, .grupo-input select {
+    padding: 10px;
+    border: 2px solid #000000;
+    font-family: Arial, sans-serif;
+    font-size: 15px;
+}
+
+#btn-publicar {
+    width: 100%;
+    background: #000000;
+    color: #ffffff;
+    border: none;
+    padding: 15px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#btn-publicar:hover {
+    background: #ccff00;
+    color: #000000;
+}

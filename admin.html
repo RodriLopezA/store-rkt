@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - Tío</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-admin">
+
+    <div class="admin-container">
+        <h1>PANEL DE CARGA - EXCLUSIVO TÍO</h1>
+        <p class="sub-admin">Subí ropa al catálogo en tiempo real desde el celu</p>
+        
+        <form id="form-panel">
+            <div class="grupo-input">
+                <label>NOMBRE DE LA PRENDA</label>
+                <input type="text" id="nombre" placeholder="Ej: Buzo Nike Deportiva" required>
+            </div>
+
+            <div class="grupo-input">
+                <label>PRECIO ($)</label>
+                <input type="number" id="precio" placeholder="Ej: 32000" required>
+            </div>
+
+            <div class="grupo-input">
+                <label>CATEGORÍA</label>
+                <select id="categoria">
+                    <option value="conjuntos">CONJUNTOS</option>
+                    <option value="buzos">BUZOS / CAMPERAS</option>
+                    <option value="joggings">JOGGINGS / PANTALONES</option>
+                </select>
+            </div>
+
+            <div class="grupo-input">
+                <label>TALLES DISPONIBLES (Separados por coma)</label>
+                <input type="text" id="talles" placeholder="Ej: S, M, L, XL" value="S, M, L, XL" required>
+            </div>
+
+            <div class="grupo-input">
+                <label>FOTO DE LA PRENDA (Cámara o Galería)</label>
+                <input type="file" id="foto" accept="image/*" required>
+            </div>
+
+            <button type="submit" id="btn-publicar">⚡ PUBLICAR EN LA WEB ⚡</button>
+        </form>
+    </div>
+
+    <script src="admin.js"></script>
+</body>
+</html>
