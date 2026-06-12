@@ -1816,6 +1816,118 @@ body.cart-open .cart-backdrop {
     margin-bottom: 54px;
 }
 
+.site-footer {
+    width: 100%;
+    padding: 56px 4vw 0;
+    background: #000000;
+    color: #ffffff;
+    font-family: Inter, Arial, sans-serif;
+}
+
+.footer-grid {
+    width: min(1420px, 100%);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.35fr repeat(4, 1fr);
+    gap: 34px;
+}
+
+.site-footer h2,
+.site-footer h3,
+.site-footer p {
+    margin: 0;
+}
+
+.site-footer h2 {
+    font-size: clamp(28px, 3vw, 42px);
+    line-height: 0.95;
+    font-weight: 900;
+    letter-spacing: 0;
+    text-transform: uppercase;
+}
+
+.site-footer h3 {
+    margin-bottom: 16px;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+
+.site-footer p,
+.site-footer a,
+.site-footer span {
+    color: #a8a8a8;
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 600;
+}
+
+.site-footer a {
+    width: fit-content;
+    display: block;
+    margin-top: 9px;
+    text-decoration: none;
+    transition: color 0.18s ease;
+}
+
+.site-footer a:hover {
+    color: #ffffff;
+}
+
+.footer-brand-col p {
+    margin-top: 14px;
+}
+
+.footer-map-btn {
+    min-height: 40px;
+    margin-top: 18px !important;
+    padding: 0 14px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ffffff;
+    color: #ffffff !important;
+    font-size: 12px !important;
+    font-weight: 900 !important;
+    text-transform: uppercase;
+}
+
+.footer-map-btn:hover {
+    background: #ffffff;
+    color: #000000 !important;
+}
+
+.footer-bottom {
+    width: min(1420px, 100%);
+    margin: 46px auto 0;
+    padding: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 22px;
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.footer-bottom div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.footer-bottom a,
+.footer-bottom span {
+    margin-top: 0;
+    font-size: 12px;
+}
+
+.footer-bottom a:not(:last-child)::after {
+    content: "|";
+    margin-left: 12px;
+    color: #555555;
+}
+
 .bg-admin {
     background-color: #f0f0f0;
     min-height: 100vh;
@@ -2562,6 +2674,29 @@ body.cart-open .cart-backdrop {
         padding: 24px 18px;
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    .site-footer {
+        padding: 42px 18px 0;
+    }
+
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .footer-bottom {
+        margin-top: 34px;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .footer-bottom div {
+        justify-content: flex-start;
+    }
+
+    .footer-bottom a:not(:last-child)::after {
+        display: none;
     }
 
     .bg-admin {
