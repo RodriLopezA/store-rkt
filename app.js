@@ -3,7 +3,7 @@ const SUPABASE_URL = "TU_SUPABASE_URL";
 const SUPABASE_KEY = "TU_SUPABASE_ANON_KEY";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const NUMERO_TIO_WSP = "549221XXXXXXX"; // Poné el número de tu tío con código de área (sin el + ni el 15)
+const NUMERO_WSP = "549221XXXXXXX"; // Poné el número de tu tío con código de área (sin el + ni el 15)
 
 let productosData = [];
 
@@ -67,7 +67,7 @@ function enviarPedido(nombre, precio, boton) {
     
     const textoMensaje = `¡Hola! Vi este producto en tu web y me interesa comprarlo:\n\n🔥 *Producto:* ${nombre}\n📏 *Talle:* ${talleSeleccionado}\n💰 *Precio:* $${Number(precio).toLocaleString('es-AR')}\n\n¿Seguís teniendo en stock?`;
     
-    const urlWsp = `https://wa.me/${NUMERO_TIO_WSP}?text=${encodeURIComponent(textoMensaje)}`;
+    const urlWsp = `https://wa.me/${NUMERO_WSP}?text=${encodeURIComponent(textoMensaje)}`;
     window.open(urlWsp, '_blank');
 }
 
