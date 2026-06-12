@@ -24,6 +24,7 @@ async function obtenerProductos() {
 
     productosData = data || [];
     loading.style.display = 'none';
+    renderizarDestacados(productosData.slice(0, 4));
     aplicarFiltros();
 }
 
@@ -66,6 +67,25 @@ function renderizarGrid(lista) {
         return;
     }
 
+    renderizarCards(lista, grid);
+}
+
+function renderizarDestacados(lista) {
+    const loading = document.getElementById('loading-destacados');
+    const grid = document.getElementById('grid-destacados');
+
+    loading.style.display = 'none';
+    grid.innerHTML = "";
+
+    if (!lista.length) {
+        grid.innerHTML = '<div class="mensaje-alerta">Todavia no hay productos destacados.</div>';
+        return;
+    }
+
+    renderizarCards(lista, grid);
+}
+
+function renderizarCards(lista, grid) {
     lista.forEach((prod) => {
         const arrayTalles = prod.talles ? prod.talles.split(',') : ['U'];
         const precio = Number(prod.precio || 0);
@@ -147,7 +167,17 @@ function configurarFiltros() {
     });
 }
 
+function configurarHeaderScroll() {
+    const actualizarHeader = () => {
+        document.body.classList.toggle('scrolled', window.scrollY > 80);
+    };
+
+    actualizarHeader();
+    window.addEventListener('scroll', actualizarHeader, { passive: true });
+}
+
 window.addEventListener('DOMContentLoaded', () => {
+    configurarHeaderScroll();
     configurarFiltros();
     obtenerProductos();
 });
