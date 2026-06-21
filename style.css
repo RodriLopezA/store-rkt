@@ -1,4 +1,4 @@
-* {
+﻿* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
@@ -1532,7 +1532,7 @@ body.scrolled .hero-scroll-cue {
     line-height: 32px;
 }
 
-.badge-rkt {
+.badge-demo {
     position: absolute;
     top: 14px;
     left: 14px;
@@ -1547,7 +1547,7 @@ body.scrolled .hero-scroll-cue {
     text-transform: uppercase;
 }
 
-.badge-rkt.agotado {
+.badge-demo.agotado {
     background: #ff4343;
     color: #ffffff;
 }
@@ -2551,7 +2551,7 @@ body.cart-open .cart-backdrop {
 }
 
 .categoria-selector button.selected::after {
-    content: " ✓";
+    content: " âœ“";
     color: #c8ff00;
 }
 
@@ -2596,7 +2596,7 @@ body.cart-open .cart-backdrop {
 }
 
 .talles-selector button.selected::after {
-    content: " ✓";
+    content: " âœ“";
     color: #c8ff00;
 }
 
