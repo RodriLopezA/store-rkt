@@ -195,10 +195,11 @@
                 <div class="preview-fotos" id="preview-fotos"></div>
             </div>
 
-            <button type="button" id="btn-publicar">
+            <button type="button" id="btn-publicar" onclick="window.publicarProductoAdmin && window.publicarProductoAdmin(event)">
                 <span class="btn-spinner" aria-hidden="true"></span>
                 <span class="btn-label">PUBLICAR EN LA WEB</span>
             </button>
+            <small class="input-ayuda" id="admin-estado-publicacion"></small>
         </form>
 
         <div class="admin-listado">
@@ -322,6 +323,6 @@
 
         window.__adminSelectorsInline = true;
     </script>
-    <script src="admin.js?v=admin-old-supabase-1"></script>
+    <script src="admin.js?v=admin-publicar-lista-1"></script>
 </body>
 </html>

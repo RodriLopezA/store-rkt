@@ -101,6 +101,9 @@ const tallesPreview = document.getElementById('talles-preview');
 const coloresInput = document.getElementById('colores');
 const coloresSelector = document.getElementById('colores-selector');
 const coloresPreview = document.getElementById('colores-preview');
+const adminEstadoPublicacion = document.getElementById('admin-estado-publicacion');
+const adminProductos = document.getElementById('admin-productos');
+const btnRecargarProductos = document.getElementById('btn-recargar-productos');
 
 const categoriasRelacionadas = {
     conjuntos: ['remeras', 'pantalones', 'joggings'],
@@ -184,10 +187,72 @@ actualizarCategoriaPreview(categoriaInput?.value);
 actualizarTalles();
 actualizarColores();
 
+function mostrarEstadoPublicacion(mensaje) {
+    if (adminEstadoPublicacion) {
+        adminEstadoPublicacion.innerText = mensaje;
+    }
+}
+
+function obtenerImagenProducto(producto) {
+    if (Array.isArray(producto.imagenes_urls) && producto.imagenes_urls.length) {
+        return producto.imagenes_urls[0];
+    }
+
+    return producto.imagen_url || '';
+}
+
+async function cargarProductosAdmin() {
+    if (!adminProductos) return;
+
+    adminProductos.innerHTML = '<p class="input-ayuda">Cargando productos...</p>';
+
+    let { data, error } = await supabase
+        .from('productos')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    if (error && error.message?.toLowerCase().includes('created_at')) {
+        const fallback = await supabase
+            .from('productos')
+            .select('*');
+
+        data = fallback.data;
+        error = fallback.error;
+    }
+
+    if (error) {
+        adminProductos.innerHTML = `<p class="input-ayuda">No se pudieron cargar productos: ${error.message}</p>`;
+        return;
+    }
+
+    if (!data.length) {
+        adminProductos.innerHTML = '<p class="input-ayuda">Todavia no hay productos cargados.</p>';
+        return;
+    }
+
+    adminProductos.innerHTML = data.map((producto) => {
+        const imagen = obtenerImagenProducto(producto);
+        const precio = Number(producto.precio || 0).toLocaleString('es-AR');
+
+        return `
+            <article class="admin-producto">
+                ${imagen ? `<img src="${imagen}" alt="${producto.nombre || 'Producto'}">` : '<div></div>'}
+                <div>
+                    <strong>${producto.nombre || 'Sin nombre'}</strong>
+                    <span>$${precio}</span>
+                    <small>${producto.categoria || 'Sin categoria'} | ${producto.talles || 'Sin talles'}</small>
+                </div>
+            </article>
+        `;
+    }).join('');
+}
+
 async function publicarProducto(e) {
     e.preventDefault();
     
     const btn = document.getElementById('btn-publicar');
+    if (btn.disabled) return;
+
     const btnLabel = btn.querySelector('.btn-label');
     const textoOriginal = btnLabel ? btnLabel.innerText : btn.innerText;
     btn.classList.add('is-loading');
@@ -197,6 +262,7 @@ async function publicarProducto(e) {
         btn.innerText = "SUBIENDO...";
     }
     btn.disabled = true;
+    mostrarEstadoPublicacion('Preparando publicacion...');
 
     const nombre = document.getElementById('nombre').value;
     const precio = Number(document.getElementById('precio').value);
@@ -209,17 +275,12 @@ async function publicarProducto(e) {
     const fotosArchivos = [...document.getElementById('foto').files].slice(0, 5);
 
     try {
-        let { data: { session } } = await supabase.auth.getSession();
-        if (!session && window.adminSession?.access_token && window.adminSession?.refresh_token) {
-            const restored = await supabase.auth.setSession({
-                access_token: window.adminSession.access_token,
-                refresh_token: window.adminSession.refresh_token
-            });
-            session = restored.data.session;
+        if (!nombre.trim()) {
+            throw new Error("Escribi el nombre de la prenda.");
         }
 
-        if (!session) {
-            throw new Error("No se pudo confirmar la sesion. Recarga la pagina y entra una vez mas.");
+        if (!precio || precio <= 0) {
+            throw new Error("Escribi un precio valido.");
         }
 
         if (!fotosArchivos.length) {
@@ -233,7 +294,9 @@ async function publicarProducto(e) {
         const imagenesUrls = [];
 
         for (const fotoArchivo of fotosArchivos) {
-            const nombreImagen = `${Date.now()}-${crypto.randomUUID()}-${fotoArchivo.name.replace(/\s+/g, '')}`;
+            mostrarEstadoPublicacion(`Subiendo foto ${imagenesUrls.length + 1} de ${fotosArchivos.length}...`);
+            const nombreLimpio = fotoArchivo.name.replace(/\s+/g, '').replace(/[^a-zA-Z0-9._-]/g, '');
+            const nombreImagen = `${Date.now()}-${Math.random().toString(16).slice(2)}-${nombreLimpio}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('fotos-ropa')
@@ -247,6 +310,8 @@ async function publicarProducto(e) {
 
             imagenesUrls.push(urlData.publicUrl);
         }
+
+        mostrarEstadoPublicacion('Guardando producto en la base...');
 
         const urlFinalImagen = imagenesUrls[0];
         const descuentoActivo = descuento > 0;
@@ -292,6 +357,7 @@ async function publicarProducto(e) {
 
         if (dbError) throw dbError;
 
+        mostrarEstadoPublicacion('Producto publicado con exito.');
         alert("Producto publicado con exito.");
         form.reset();
         categoriaSelector?.querySelectorAll('[data-categoria-admin]').forEach((item) => item.classList.remove('selected'));
@@ -305,9 +371,11 @@ async function publicarProducto(e) {
         actualizarTalles();
         coloresSelector?.querySelectorAll('[data-color-admin]').forEach((item) => item.classList.remove('selected'));
         actualizarColores();
+        await cargarProductosAdmin();
 
     } catch (err) {
         console.error(err);
+        mostrarEstadoPublicacion(`Error: ${err.message}`);
         alert("Ocurrio un error: " + err.message);
     } finally {
         btn.classList.remove('is-loading');
@@ -322,3 +390,6 @@ async function publicarProducto(e) {
 
 form.addEventListener('submit', publicarProducto);
 document.getElementById('btn-publicar')?.addEventListener('click', publicarProducto);
+window.publicarProductoAdmin = publicarProducto;
+btnRecargarProductos?.addEventListener('click', cargarProductosAdmin);
+cargarProductosAdmin();
