@@ -223,6 +223,10 @@
     </div>
 
     <script>
+        const adminSupabaseUrl = "https://kgzffjbwhlrlgxforfgv.supabase.co";
+        const adminSupabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnemZmamJ3aGxybGd4Zm9yZmd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5ODE3MDUsImV4cCI6MjA5NjU1NzcwNX0.FkaQALy1TU2_S8ae0gxAcmsikNLO72qm0_k3knNw2jo";
+        window.adminSupabase = window.supabase.createClient(adminSupabaseUrl, adminSupabaseKey);
+
         const adminLoginForm = document.getElementById('form-login');
         const adminLoginButton = document.getElementById('btn-login');
         const adminLoginBox = document.getElementById('login-admin');
@@ -252,12 +256,7 @@
             adminLoginButton.disabled = true;
             adminLoginButton.textContent = "INGRESANDO...";
 
-            const clienteSupabase = window.supabase.createClient(
-                "https://kgzffjbwhlrlgxforfgv.supabase.co",
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtnemZmamJ3aGxybGd4Zm9yZmd2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5ODE3MDUsImV4cCI6MjA5NjU1NzcwNX0.FkaQALy1TU2_S8ae0gxAcmsikNLO72qm0_k3knNw2jo"
-            );
-
-            const { error } = await clienteSupabase.auth.signInWithPassword({
+            const { error } = await window.adminSupabase.auth.signInWithPassword({
                 email,
                 password
             });
@@ -277,7 +276,51 @@
         adminLoginForm.addEventListener('submit', loginAdminDirecto);
         adminLoginButton.addEventListener('click', loginAdminDirecto);
         window.__adminLoginInline = true;
+
+        const categoriaInputInline = document.getElementById('categoria');
+        const tallesInputInline = document.getElementById('talles');
+        const coloresInputInline = document.getElementById('colores');
+
+        document.getElementById('categoria-selector').addEventListener('click', (event) => {
+            const boton = event.target.closest('[data-categoria-admin]');
+            if (!boton) return;
+
+            event.preventDefault();
+            document.querySelectorAll('[data-categoria-admin]').forEach((item) => {
+                item.classList.remove('selected');
+                item.setAttribute('aria-pressed', 'false');
+            });
+            boton.classList.add('selected');
+            boton.setAttribute('aria-pressed', 'true');
+            categoriaInputInline.value = boton.dataset.categoriaAdmin;
+        });
+
+        document.getElementById('talles-selector').addEventListener('click', (event) => {
+            const boton = event.target.closest('[data-talle]');
+            if (!boton) return;
+
+            event.preventDefault();
+            boton.classList.toggle('selected');
+            boton.setAttribute('aria-pressed', boton.classList.contains('selected') ? 'true' : 'false');
+            tallesInputInline.value = [...document.querySelectorAll('[data-talle].selected')]
+                .map((item) => item.dataset.talle)
+                .join(', ');
+        });
+
+        document.getElementById('colores-selector').addEventListener('click', (event) => {
+            const boton = event.target.closest('[data-color-admin]');
+            if (!boton) return;
+
+            event.preventDefault();
+            boton.classList.toggle('selected');
+            boton.setAttribute('aria-pressed', boton.classList.contains('selected') ? 'true' : 'false');
+            coloresInputInline.value = [...document.querySelectorAll('[data-color-admin].selected')]
+                .map((item) => item.dataset.colorAdmin)
+                .join(', ');
+        });
+
+        window.__adminSelectorsInline = true;
     </script>
-    <script src="admin.js?v=admin-selectores-2"></script>
+    <script src="admin.js?v=admin-selectores-3"></script>
 </body>
 </html>

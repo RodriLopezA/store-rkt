@@ -20,7 +20,7 @@ if (!window.supabase) {
     throw new Error("Supabase JS no esta cargado.");
 }
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = window.adminSupabase || window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function mostrarPanelAutenticado(autenticado) {
     if (loginAdmin) loginAdmin.hidden = autenticado;
@@ -162,9 +162,11 @@ function seleccionarColor(e) {
     actualizarColores();
 }
 
-categoriaSelector?.addEventListener('click', seleccionarCategoria);
-tallesSelector?.addEventListener('click', seleccionarTalle);
-coloresSelector?.addEventListener('click', seleccionarColor);
+if (!window.__adminSelectorsInline) {
+    categoriaSelector?.addEventListener('click', seleccionarCategoria);
+    tallesSelector?.addEventListener('click', seleccionarTalle);
+    coloresSelector?.addEventListener('click', seleccionarColor);
+}
 
 actualizarCategoriaPreview(categoriaInput?.value);
 actualizarTalles();
