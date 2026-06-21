@@ -388,8 +388,10 @@ async function publicarProducto(e) {
     }
 }
 
-form.addEventListener('submit', publicarProducto);
-document.getElementById('btn-publicar')?.addEventListener('click', publicarProducto);
-window.publicarProductoAdmin = publicarProducto;
+if (!window.__adminPublishInline) {
+    form.addEventListener('submit', publicarProducto);
+    document.getElementById('btn-publicar')?.addEventListener('click', publicarProducto);
+    window.publicarProductoAdmin = publicarProducto;
+}
 btnRecargarProductos?.addEventListener('click', cargarProductosAdmin);
 cargarProductosAdmin();

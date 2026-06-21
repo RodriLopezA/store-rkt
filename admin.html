@@ -322,7 +322,134 @@
         });
 
         window.__adminSelectorsInline = true;
+
+        function setEstadoPublicacion(mensaje) {
+            const estado = document.getElementById('admin-estado-publicacion');
+            if (estado) estado.textContent = mensaje;
+        }
+
+        function resetAdminSelectors() {
+            document.querySelectorAll('[data-categoria-admin]').forEach((item) => item.classList.remove('selected'));
+            document.querySelector('[data-categoria-admin="conjuntos"]')?.classList.add('selected');
+            document.getElementById('categoria').value = 'conjuntos';
+
+            document.querySelectorAll('[data-talle]').forEach((item) => item.classList.remove('selected'));
+            ['XS', 'S', 'M', 'L', 'XL'].forEach((talle) => {
+                document.querySelector(`[data-talle="${talle}"]`)?.classList.add('selected');
+            });
+            document.getElementById('talles').value = 'XS, S, M, L, XL';
+
+            document.querySelectorAll('[data-color-admin]').forEach((item) => item.classList.remove('selected'));
+            document.getElementById('colores').value = '';
+        }
+
+        async function publicarProductoDirecto(event) {
+            event.preventDefault();
+
+            const boton = document.getElementById('btn-publicar');
+            if (boton.disabled) return;
+
+            const label = boton.querySelector('.btn-label');
+            const textoOriginal = label ? label.textContent : boton.textContent;
+            boton.disabled = true;
+            boton.classList.add('is-loading');
+            if (label) label.textContent = 'SUBIENDO...';
+            setEstadoPublicacion('Preparando publicacion...');
+
+            try {
+                const nombre = document.getElementById('nombre').value.trim();
+                const precio = Number(document.getElementById('precio').value);
+                const descripcion = document.getElementById('descripcion').value.trim();
+                const categoria = document.getElementById('categoria').value;
+                const talles = document.getElementById('talles').value;
+                const colores = document.getElementById('colores').value;
+                const descuentoPorcentaje = Number(document.getElementById('descuento').value || 0);
+                const nuevoIngreso = document.getElementById('nuevo-ingreso').checked;
+                const fotos = [...document.getElementById('foto').files].slice(0, 5);
+
+                if (!nombre) throw new Error('Escribi el nombre de la prenda.');
+                if (!precio || precio <= 0) throw new Error('Escribi un precio valido.');
+                if (!talles) throw new Error('Selecciona al menos un talle.');
+                if (!fotos.length) throw new Error('Selecciona al menos una foto.');
+
+                const urls = [];
+                for (const foto of fotos) {
+                    setEstadoPublicacion(`Subiendo foto ${urls.length + 1} de ${fotos.length}...`);
+                    const nombreLimpio = foto.name.replace(/\s+/g, '').replace(/[^a-zA-Z0-9._-]/g, '');
+                    const ruta = `${Date.now()}-${Math.random().toString(16).slice(2)}-${nombreLimpio}`;
+                    const { error: uploadError } = await window.adminSupabase.storage
+                        .from('fotos-ropa')
+                        .upload(ruta, foto);
+
+                    if (uploadError) throw uploadError;
+
+                    const { data: urlData } = window.adminSupabase.storage
+                        .from('fotos-ropa')
+                        .getPublicUrl(ruta);
+
+                    urls.push(urlData.publicUrl);
+                }
+
+                setEstadoPublicacion('Guardando producto...');
+
+                const descuentoActivo = descuentoPorcentaje > 0;
+                const productoCompleto = {
+                    nombre,
+                    precio,
+                    categoria,
+                    talles,
+                    imagen_url: urls[0],
+                    imagenes_urls: urls,
+                    descripcion,
+                    colores,
+                    nuevo_ingreso: nuevoIngreso,
+                    descuento: descuentoActivo,
+                    descuento_porcentaje: descuentoPorcentaje,
+                    precio_anterior: descuentoActivo ? Math.round(precio / (1 - descuentoPorcentaje / 100)) : 0,
+                    categorias_busqueda: categoria === 'conjuntos'
+                        ? ['conjuntos', 'remeras', 'pantalones', 'joggings']
+                        : [categoria]
+                };
+
+                const productoBasico = {
+                    nombre,
+                    precio,
+                    categoria,
+                    talles,
+                    imagen_url: urls[0]
+                };
+
+                let { error: dbError } = await window.adminSupabase
+                    .from('productos')
+                    .insert([productoCompleto]);
+
+                if (dbError && dbError.message?.toLowerCase().includes('column')) {
+                    const fallback = await window.adminSupabase
+                        .from('productos')
+                        .insert([productoBasico]);
+                    dbError = fallback.error;
+                }
+
+                if (dbError) throw dbError;
+
+                document.getElementById('form-panel').reset();
+                resetAdminSelectors();
+                setEstadoPublicacion('Producto publicado con exito.');
+                alert('Producto publicado con exito.');
+            } catch (error) {
+                console.error(error);
+                setEstadoPublicacion(`Error: ${error.message}`);
+                alert(`Ocurrio un error: ${error.message}`);
+            } finally {
+                boton.disabled = false;
+                boton.classList.remove('is-loading');
+                if (label) label.textContent = textoOriginal;
+            }
+        }
+
+        window.publicarProductoAdmin = publicarProductoDirecto;
+        window.__adminPublishInline = true;
     </script>
-    <script src="admin.js?v=admin-publicar-lista-2"></script>
+    <script src="admin.js?v=admin-inline-publish-1"></script>
 </body>
 </html>
