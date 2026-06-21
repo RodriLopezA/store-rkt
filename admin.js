@@ -76,6 +76,84 @@ btnLogout?.addEventListener('click', async () => {
 
 verificarSesion();
 const form = document.getElementById('form-panel');
+const categoriaInput = document.getElementById('categoria');
+const categoriaSelector = document.getElementById('categoria-selector');
+const categoriaPreview = document.getElementById('categoria-preview');
+const tallesInput = document.getElementById('talles');
+const tallesSelector = document.getElementById('talles-selector');
+const tallesPreview = document.getElementById('talles-preview');
+const coloresInput = document.getElementById('colores');
+const coloresSelector = document.getElementById('colores-selector');
+const coloresPreview = document.getElementById('colores-preview');
+
+const categoriasRelacionadas = {
+    conjuntos: ['remeras', 'pantalones', 'joggings'],
+    hoodies: ['buzos'],
+    cortos: ['shorts', 'bermudas'],
+    rinonera: ['rinoneras'],
+    viseras: ['gorras', 'caps']
+};
+
+function actualizarCategoriaPreview(categoria) {
+    const extras = categoriasRelacionadas[categoria] || [];
+    if (!categoriaPreview) return;
+
+    categoriaPreview.innerText = extras.length
+        ? `Se va a mostrar tambien en: ${extras.join(', ')}`
+        : 'Categoria principal seleccionada';
+}
+
+function actualizarTalles() {
+    const talles = [...tallesSelector.querySelectorAll('button.selected')]
+        .map((boton) => boton.dataset.talle);
+
+    tallesInput.value = talles.join(', ');
+    tallesPreview.innerText = talles.length
+        ? `Seleccionados: ${talles.join(', ')}`
+        : 'Selecciona al menos un talle';
+}
+
+function actualizarColores() {
+    const colores = [...coloresSelector.querySelectorAll('button.selected')]
+        .map((boton) => boton.dataset.colorAdmin);
+
+    coloresInput.value = colores.join(', ');
+    coloresPreview.innerText = colores.length
+        ? `Seleccionados: ${colores.join(', ')}`
+        : 'Sin colores seleccionados';
+}
+
+categoriaSelector?.addEventListener('click', (e) => {
+    const boton = e.target.closest('[data-categoria-admin]');
+    if (!boton) return;
+
+    categoriaSelector.querySelectorAll('[data-categoria-admin]')
+        .forEach((item) => item.classList.remove('selected'));
+
+    boton.classList.add('selected');
+    categoriaInput.value = boton.dataset.categoriaAdmin;
+    actualizarCategoriaPreview(boton.dataset.categoriaAdmin);
+});
+
+tallesSelector?.addEventListener('click', (e) => {
+    const boton = e.target.closest('[data-talle]');
+    if (!boton) return;
+
+    boton.classList.toggle('selected');
+    actualizarTalles();
+});
+
+coloresSelector?.addEventListener('click', (e) => {
+    const boton = e.target.closest('[data-color-admin]');
+    if (!boton) return;
+
+    boton.classList.toggle('selected');
+    actualizarColores();
+});
+
+actualizarCategoriaPreview(categoriaInput?.value);
+actualizarTalles();
+actualizarColores();
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();

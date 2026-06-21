@@ -2551,7 +2551,7 @@ body.cart-open .cart-backdrop {
 }
 
 .categoria-selector button.selected::after {
-    content: " âœ“";
+    content: "";
     color: #c8ff00;
 }
 
@@ -2596,7 +2596,7 @@ body.cart-open .cart-backdrop {
 }
 
 .talles-selector button.selected::after {
-    content: " âœ“";
+    content: "";
     color: #c8ff00;
 }
 
