@@ -32,6 +32,10 @@ async function verificarSesion() {
     mostrarPanelAutenticado(Boolean(session));
 }
 
+supabase.auth.onAuthStateChange((_event, session) => {
+    mostrarPanelAutenticado(Boolean(session));
+});
+
 async function ingresarAdmin(e) {
     e.preventDefault();
 
@@ -94,6 +98,10 @@ const categoriasRelacionadas = {
     viseras: ['gorras', 'caps']
 };
 
+function obtenerCategoriasBusqueda(categoria) {
+    return [categoria, ...(categoriasRelacionadas[categoria] || [])];
+}
+
 function actualizarCategoriaPreview(categoria) {
     const extras = categoriasRelacionadas[categoria] || [];
     if (!categoriaPreview) return;
@@ -123,9 +131,10 @@ function actualizarColores() {
         : 'Sin colores seleccionados';
 }
 
-categoriaSelector?.addEventListener('click', (e) => {
+function seleccionarCategoria(e) {
     const boton = e.target.closest('[data-categoria-admin]');
     if (!boton) return;
+    e.preventDefault();
 
     categoriaSelector.querySelectorAll('[data-categoria-admin]')
         .forEach((item) => item.classList.remove('selected'));
@@ -133,23 +142,29 @@ categoriaSelector?.addEventListener('click', (e) => {
     boton.classList.add('selected');
     categoriaInput.value = boton.dataset.categoriaAdmin;
     actualizarCategoriaPreview(boton.dataset.categoriaAdmin);
-});
+}
 
-tallesSelector?.addEventListener('click', (e) => {
+function seleccionarTalle(e) {
     const boton = e.target.closest('[data-talle]');
     if (!boton) return;
+    e.preventDefault();
 
     boton.classList.toggle('selected');
     actualizarTalles();
-});
+}
 
-coloresSelector?.addEventListener('click', (e) => {
+function seleccionarColor(e) {
     const boton = e.target.closest('[data-color-admin]');
     if (!boton) return;
+    e.preventDefault();
 
     boton.classList.toggle('selected');
     actualizarColores();
-});
+}
+
+categoriaSelector?.addEventListener('click', seleccionarCategoria);
+tallesSelector?.addEventListener('click', seleccionarTalle);
+coloresSelector?.addEventListener('click', seleccionarColor);
 
 actualizarCategoriaPreview(categoriaInput?.value);
 actualizarTalles();
@@ -159,56 +174,127 @@ form.addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const btn = document.getElementById('btn-publicar');
-    btn.innerText = "ðŸ’¥ SUBIENDO ROPA... ESPERÃ";
+    const btnLabel = btn.querySelector('.btn-label');
+    const textoOriginal = btnLabel ? btnLabel.innerText : btn.innerText;
+    btn.classList.add('is-loading');
+    if (btnLabel) {
+        btnLabel.innerText = "SUBIENDO...";
+    } else {
+        btn.innerText = "SUBIENDO...";
+    }
     btn.disabled = true;
 
     const nombre = document.getElementById('nombre').value;
     const precio = Number(document.getElementById('precio').value);
     const categoria = document.getElementById('categoria').value;
     const talles = document.getElementById('talles').value;
-    const fotoArchivo = document.getElementById('foto').files[0];
+    const descripcion = document.getElementById('descripcion')?.value || '';
+    const descuento = Number(document.getElementById('descuento')?.value || 0);
+    const nuevoIngreso = document.getElementById('nuevo-ingreso')?.checked ?? true;
+    const colores = document.getElementById('colores')?.value || '';
+    const fotosArchivos = [...document.getElementById('foto').files].slice(0, 5);
 
     try {
-        // 1. Crear nombre Ãºnico de imagen para que no se pisen
-        const nombreImagen = `${Date.now()}-${fotoArchivo.name.replace(/\s+/g, '')}`;
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            mostrarPanelAutenticado(false);
+            throw new Error("La sesion expiro. Inicia sesion otra vez antes de publicar.");
+        }
 
-        // 2. Subir al Storage (Asegurate de crear el bucket pÃºblico llamado "fotos-ropa" en Supabase)
-        const { data: uploadData, error: uploadError } = await supabase.storage
-            .from('fotos-ropa')
-            .upload(nombreImagen, fotoArchivo);
+        if (!fotosArchivos.length) {
+            throw new Error("Selecciona al menos una foto antes de publicar.");
+        }
 
-        if (uploadError) throw uploadError;
+        if (!talles) {
+            throw new Error("Selecciona al menos un talle.");
+        }
 
-        // 3. Conseguir la URL pÃºblica de la imagen
-        const { data: urlData } = supabase.storage
-            .from('fotos-ropa')
-            .getPublicUrl(nombreImagen);
+        const imagenesUrls = [];
 
-        const urlFinalImagen = urlData.publicUrl;
+        for (const fotoArchivo of fotosArchivos) {
+            const nombreImagen = `${Date.now()}-${crypto.randomUUID()}-${fotoArchivo.name.replace(/\s+/g, '')}`;
 
-        // 4. Subir los datos a la tabla de base de datos "productos"
-        const { error: dbError } = await supabase
+            const { error: uploadError } = await supabase.storage
+                .from('fotos-ropa')
+                .upload(nombreImagen, fotoArchivo);
+
+            if (uploadError) throw uploadError;
+
+            const { data: urlData } = supabase.storage
+                .from('fotos-ropa')
+                .getPublicUrl(nombreImagen);
+
+            imagenesUrls.push(urlData.publicUrl);
+        }
+
+        const urlFinalImagen = imagenesUrls[0];
+        const descuentoActivo = descuento > 0;
+        const precioAnterior = descuentoActivo
+            ? Math.round(precio / (1 - descuento / 100))
+            : 0;
+
+        const productoCompleto = {
+            nombre: nombre,
+            precio: precio,
+            categoria: categoria,
+            talles: talles,
+            imagen_url: urlFinalImagen,
+            imagenes_urls: imagenesUrls,
+            descripcion: descripcion,
+            descuento: descuentoActivo,
+            descuento_porcentaje: descuento,
+            precio_anterior: precioAnterior,
+            nuevo_ingreso: nuevoIngreso,
+            colores: colores,
+            categorias_busqueda: obtenerCategoriasBusqueda(categoria)
+        };
+
+        const productoBasico = {
+            nombre: nombre,
+            precio: precio,
+            categoria: categoria,
+            talles: talles,
+            imagen_url: urlFinalImagen
+        };
+
+        let { error: dbError } = await supabase
             .from('productos')
-            .insert([
-                {
-                    nombre: nombre,
-                    precio: precio,
-                    categoria: categoria,
-                    talles: talles,
-                    imagen_url: urlFinalImagen
-                }
-            ]);
+            .insert([productoCompleto]);
+
+        if (dbError && dbError.message?.toLowerCase().includes('column')) {
+            const fallback = await supabase
+                .from('productos')
+                .insert([productoBasico]);
+
+            dbError = fallback.error;
+        }
 
         if (dbError) throw dbError;
 
-        alert("ðŸš€ Â¡PRENDA PUBLICADA CON Ã‰XITO!");
+        alert("Producto publicado con exito.");
         form.reset();
+        categoriaSelector?.querySelectorAll('[data-categoria-admin]').forEach((item) => item.classList.remove('selected'));
+        categoriaSelector?.querySelector('[data-categoria-admin="conjuntos"]')?.classList.add('selected');
+        categoriaInput.value = 'conjuntos';
+        actualizarCategoriaPreview('conjuntos');
+        tallesSelector?.querySelectorAll('[data-talle]').forEach((item) => item.classList.remove('selected'));
+        ['XS', 'S', 'M', 'L', 'XL'].forEach((talle) => {
+            tallesSelector?.querySelector(`[data-talle="${talle}"]`)?.classList.add('selected');
+        });
+        actualizarTalles();
+        coloresSelector?.querySelectorAll('[data-color-admin]').forEach((item) => item.classList.remove('selected'));
+        actualizarColores();
 
     } catch (err) {
         console.error(err);
-        alert("OcurriÃ³ un error: " + err.message);
+        alert("Ocurrio un error: " + err.message);
     } finally {
-        btn.innerText = "âš¡ PUBLICAR EN LA WEB âš¡";
+        btn.classList.remove('is-loading');
+        if (btnLabel) {
+            btnLabel.innerText = textoOriginal;
+        } else {
+            btn.innerText = textoOriginal;
+        }
         btn.disabled = false;
     }
 });

@@ -2548,6 +2548,8 @@ body.cart-open .cart-backdrop {
 .categoria-selector button.selected {
     background: #050505;
     color: #ffffff;
+    border-color: #20c861;
+    box-shadow: 0 0 0 3px rgba(32, 200, 97, 0.22);
 }
 
 .categoria-selector button.selected::after {
@@ -2593,6 +2595,8 @@ body.cart-open .cart-backdrop {
 .talles-selector button.selected {
     background: #050505;
     color: #ffffff;
+    border-color: #20c861;
+    box-shadow: 0 0 0 3px rgba(32, 200, 97, 0.22);
 }
 
 .talles-selector button.selected::after {
