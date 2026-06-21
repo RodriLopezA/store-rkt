@@ -256,7 +256,7 @@
             adminLoginButton.disabled = true;
             adminLoginButton.textContent = "INGRESANDO...";
 
-            const { error } = await window.adminSupabase.auth.signInWithPassword({
+            const { data, error } = await window.adminSupabase.auth.signInWithPassword({
                 email,
                 password
             });
@@ -270,6 +270,7 @@
             }
 
             adminLoginForm.reset();
+            window.adminSession = data.session;
             mostrarAdminPanel(true);
         }
 
@@ -321,6 +322,6 @@
 
         window.__adminSelectorsInline = true;
     </script>
-    <script src="admin.js?v=admin-selectores-3"></script>
+    <script src="admin.js?v=admin-session-1"></script>
 </body>
 </html>

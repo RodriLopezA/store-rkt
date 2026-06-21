@@ -32,8 +32,17 @@ async function verificarSesion() {
     mostrarPanelAutenticado(Boolean(session));
 }
 
-supabase.auth.onAuthStateChange((_event, session) => {
-    mostrarPanelAutenticado(Boolean(session));
+supabase.auth.onAuthStateChange((event, session) => {
+    if (session) {
+        window.adminSession = session;
+        mostrarPanelAutenticado(true);
+        return;
+    }
+
+    if (event === 'SIGNED_OUT') {
+        window.adminSession = null;
+        mostrarPanelAutenticado(false);
+    }
 });
 
 async function ingresarAdmin(e) {
@@ -197,10 +206,17 @@ form.addEventListener('submit', async (e) => {
     const fotosArchivos = [...document.getElementById('foto').files].slice(0, 5);
 
     try {
-        const { data: { session } } = await supabase.auth.getSession();
+        let { data: { session } } = await supabase.auth.getSession();
+        if (!session && window.adminSession?.access_token && window.adminSession?.refresh_token) {
+            const restored = await supabase.auth.setSession({
+                access_token: window.adminSession.access_token,
+                refresh_token: window.adminSession.refresh_token
+            });
+            session = restored.data.session;
+        }
+
         if (!session) {
-            mostrarPanelAutenticado(false);
-            throw new Error("La sesion expiro. Inicia sesion otra vez antes de publicar.");
+            throw new Error("No se pudo confirmar la sesion. Recarga la pagina y entra una vez mas.");
         }
 
         if (!fotosArchivos.length) {
