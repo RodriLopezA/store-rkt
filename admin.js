@@ -29,7 +29,10 @@ function mostrarPanelAutenticado(autenticado) {
 
 async function verificarSesion() {
     const { data: { session } } = await supabase.auth.getSession();
-    mostrarPanelAutenticado(Boolean(session));
+    if (session) {
+        window.adminSession = session;
+        mostrarPanelAutenticado(true);
+    }
 }
 
 supabase.auth.onAuthStateChange((event, session) => {
@@ -181,7 +184,7 @@ actualizarCategoriaPreview(categoriaInput?.value);
 actualizarTalles();
 actualizarColores();
 
-form.addEventListener('submit', async (e) => {
+async function publicarProducto(e) {
     e.preventDefault();
     
     const btn = document.getElementById('btn-publicar');
@@ -315,4 +318,7 @@ form.addEventListener('submit', async (e) => {
         }
         btn.disabled = false;
     }
-});
+}
+
+form.addEventListener('submit', publicarProducto);
+document.getElementById('btn-publicar')?.addEventListener('click', publicarProducto);
