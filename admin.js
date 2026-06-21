@@ -393,5 +393,7 @@ if (!window.__adminPublishInline) {
     document.getElementById('btn-publicar')?.addEventListener('click', publicarProducto);
     window.publicarProductoAdmin = publicarProducto;
 }
-btnRecargarProductos?.addEventListener('click', cargarProductosAdmin);
-cargarProductosAdmin();
+if (!window.__adminListInline) {
+    btnRecargarProductos?.addEventListener('click', cargarProductosAdmin);
+    cargarProductosAdmin();
+}

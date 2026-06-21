@@ -1,6 +1,5 @@
 const SUPABASE_URL = "https://zpyhryenaaiewbjzjmfg.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpweWhyeWVuYWFpZXdianpqbWZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjgyNTIsImV4cCI6MjA5NjgwNDI1Mn0.hzHO4eRH7xH_O1zo6_lBs9kbsImBNLnDxL23okgK9_g";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 const NUMERO_WSP = "5492215676073";
 
 let productosData = [];
@@ -51,24 +50,35 @@ function coloresProducto(producto) {
 }
 
 async function obtenerProductos() {
-    let { data, error } = await supabase
-        .from('productos')
-        .select('*')
-        .order('created_at', { ascending: false });
+    const url = `${SUPABASE_URL}/rest/v1/productos?select=*&order=created_at.desc`;
 
-    if (error && error.message?.toLowerCase().includes('created_at')) {
-        const fallback = await supabase.from('productos').select('*');
-        data = fallback.data;
-        error = fallback.error;
-    }
+    try {
+        let respuesta = await fetch(url, {
+            headers: {
+                apikey: SUPABASE_KEY,
+                Authorization: `Bearer ${SUPABASE_KEY}`
+            }
+        });
 
-    if (error) {
+        if (!respuesta.ok && respuesta.status === 400) {
+            respuesta = await fetch(`${SUPABASE_URL}/rest/v1/productos?select=*`, {
+                headers: {
+                    apikey: SUPABASE_KEY,
+                    Authorization: `Bearer ${SUPABASE_KEY}`
+                }
+            });
+        }
+
+        if (!respuesta.ok) {
+            throw new Error(await respuesta.text());
+        }
+
+        productosData = await respuesta.json();
+        return productosData;
+    } catch (error) {
         mostrarErrorCarga(error.message);
         return [];
     }
-
-    productosData = data || [];
-    return productosData;
 }
 
 function ocultarLoading(id) {

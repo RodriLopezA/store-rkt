@@ -343,6 +343,65 @@
             document.getElementById('colores').value = '';
         }
 
+        function imagenAdminProducto(producto) {
+            if (Array.isArray(producto.imagenes_urls) && producto.imagenes_urls.length) {
+                return producto.imagenes_urls[0];
+            }
+
+            return producto.imagen_url || '';
+        }
+
+        async function cargarProductosAdminDirecto() {
+            const contenedor = document.getElementById('admin-productos');
+            if (!contenedor) return;
+
+            contenedor.innerHTML = '<p class="input-ayuda">Cargando productos...</p>';
+
+            try {
+                let respuesta = await fetch(`${adminSupabaseUrl}/rest/v1/productos?select=*&order=created_at.desc`, {
+                    headers: {
+                        apikey: adminSupabaseKey,
+                        Authorization: `Bearer ${adminSupabaseKey}`
+                    }
+                });
+
+                if (!respuesta.ok && respuesta.status === 400) {
+                    respuesta = await fetch(`${adminSupabaseUrl}/rest/v1/productos?select=*`, {
+                        headers: {
+                            apikey: adminSupabaseKey,
+                            Authorization: `Bearer ${adminSupabaseKey}`
+                        }
+                    });
+                }
+
+                if (!respuesta.ok) throw new Error(await respuesta.text());
+
+                const productos = await respuesta.json();
+                if (!productos.length) {
+                    contenedor.innerHTML = '<p class="input-ayuda">Todavia no hay productos cargados.</p>';
+                    return;
+                }
+
+                contenedor.innerHTML = productos.map((producto) => {
+                    const imagen = imagenAdminProducto(producto);
+                    const precio = Number(producto.precio || 0).toLocaleString('es-AR');
+
+                    return `
+                        <article class="admin-producto">
+                            ${imagen ? `<img src="${imagen}" alt="${producto.nombre || 'Producto'}">` : '<div></div>'}
+                            <div>
+                                <strong>${producto.nombre || 'Sin nombre'}</strong>
+                                <span>$${precio}</span>
+                                <small>${producto.categoria || 'Sin categoria'} | ${producto.talles || 'Sin talles'}</small>
+                            </div>
+                        </article>
+                    `;
+                }).join('');
+            } catch (error) {
+                contenedor.innerHTML = `<p class="input-ayuda">No se pudieron cargar productos: ${error.message}</p>`;
+            }
+        }
+
         async function publicarProductoDirecto(event) {
             event.preventDefault();
 
@@ -435,6 +494,7 @@
                 document.getElementById('form-panel').reset();
                 resetAdminSelectors();
                 setEstadoPublicacion('Producto publicado con exito.');
+                await cargarProductosAdminDirecto();
                 alert('Producto publicado con exito.');
             } catch (error) {
                 console.error(error);
@@ -449,7 +509,10 @@
 
         window.publicarProductoAdmin = publicarProductoDirecto;
         window.__adminPublishInline = true;
+        window.__adminListInline = true;
+        document.getElementById('btn-recargar-productos')?.addEventListener('click', cargarProductosAdminDirecto);
+        cargarProductosAdminDirecto();
     </script>
-    <script src="admin.js?v=admin-inline-publish-1"></script>
+    <script src="admin.js?v=admin-rest-list-1"></script>
 </body>
 </html>
