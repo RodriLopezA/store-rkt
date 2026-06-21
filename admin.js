@@ -1,6 +1,56 @@
 ﻿const SUPABASE_URL = "https://zpyhryenaaiewbjzjmfg.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpweWhyeWVuYWFpZXdianpqbWZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjgyNTIsImV4cCI6MjA5NjgwNDI1Mn0.hzHO4eRH7xH_O1zo6_lBs9kbsImBNLnDxL23okgK9_g";
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const formLogin = document.getElementById('form-login');
+const loginAdmin = document.getElementById('login-admin');
+const panelAdmin = document.getElementById('panel-admin');
+const btnLogout = document.getElementById('btn-logout');
+
+function mostrarPanelAutenticado(autenticado) {
+    if (loginAdmin) loginAdmin.hidden = autenticado;
+    if (panelAdmin) panelAdmin.hidden = !autenticado;
+}
+
+async function verificarSesion() {
+    const { data: { session } } = await supabase.auth.getSession();
+    mostrarPanelAutenticado(Boolean(session));
+}
+
+formLogin?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const btn = document.getElementById('btn-login');
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+
+    btn.innerText = "INGRESANDO...";
+    btn.disabled = true;
+
+    const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+    });
+
+    if (error) {
+        alert("No se pudo iniciar sesion: " + error.message);
+        btn.innerText = "INGRESAR";
+        btn.disabled = false;
+        return;
+    }
+
+    formLogin.reset();
+    btn.innerText = "INGRESAR";
+    btn.disabled = false;
+    mostrarPanelAutenticado(true);
+});
+
+btnLogout?.addEventListener('click', async () => {
+    await supabase.auth.signOut();
+    mostrarPanelAutenticado(false);
+});
+
+verificarSesion();
 const form = document.getElementById('form-panel');
 
 form.addEventListener('submit', async (e) => {
