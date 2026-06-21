@@ -1,11 +1,17 @@
 ﻿const SUPABASE_URL = "https://zpyhryenaaiewbjzjmfg.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpweWhyeWVuYWFpZXdianpqbWZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjgyNTIsImV4cCI6MjA5NjgwNDI1Mn0.hzHO4eRH7xH_O1zo6_lBs9kbsImBNLnDxL23okgK9_g";
 const formLogin = document.getElementById('form-login');
+const btnLogin = document.getElementById('btn-login');
 const loginAdmin = document.getElementById('login-admin');
 const panelAdmin = document.getElementById('panel-admin');
 const btnLogout = document.getElementById('btn-logout');
 
 if (!window.supabase) {
+    btnLogin?.addEventListener('click', (e) => {
+        e.preventDefault();
+        alert("No se pudo cargar Supabase. Revisa la conexion o recarga la pagina.");
+    });
+
     formLogin?.addEventListener('submit', (e) => {
         e.preventDefault();
         alert("No se pudo cargar Supabase. Revisa la conexion o recarga la pagina.");
@@ -26,15 +32,19 @@ async function verificarSesion() {
     mostrarPanelAutenticado(Boolean(session));
 }
 
-formLogin?.addEventListener('submit', async (e) => {
+async function ingresarAdmin(e) {
     e.preventDefault();
 
-    const btn = document.getElementById('btn-login');
     const email = document.getElementById('login-email').value.trim();
     const password = document.getElementById('login-password').value;
 
-    btn.innerText = "INGRESANDO...";
-    btn.disabled = true;
+    if (!email || !password) {
+        alert("Completa email y contrasena para ingresar.");
+        return;
+    }
+
+    btnLogin.innerText = "INGRESANDO...";
+    btnLogin.disabled = true;
 
     const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -43,16 +53,19 @@ formLogin?.addEventListener('submit', async (e) => {
 
     if (error) {
         alert("No se pudo iniciar sesion: " + error.message);
-        btn.innerText = "INGRESAR";
-        btn.disabled = false;
+        btnLogin.innerText = "INGRESAR";
+        btnLogin.disabled = false;
         return;
     }
 
     formLogin.reset();
-    btn.innerText = "INGRESAR";
-    btn.disabled = false;
+    btnLogin.innerText = "INGRESAR";
+    btnLogin.disabled = false;
     mostrarPanelAutenticado(true);
-});
+}
+
+formLogin?.addEventListener('submit', ingresarAdmin);
+btnLogin?.addEventListener('click', ingresarAdmin);
 
 btnLogout?.addEventListener('click', async () => {
     await supabase.auth.signOut();
