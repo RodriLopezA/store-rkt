@@ -222,6 +222,62 @@
         </div>
     </div>
 
-    <script src="admin.js?v=login-3"></script>
+    <script>
+        const adminLoginForm = document.getElementById('form-login');
+        const adminLoginButton = document.getElementById('btn-login');
+        const adminLoginBox = document.getElementById('login-admin');
+        const adminPanelBox = document.getElementById('panel-admin');
+
+        function mostrarAdminPanel(activo) {
+            adminLoginBox.hidden = activo;
+            adminPanelBox.hidden = !activo;
+        }
+
+        async function loginAdminDirecto(event) {
+            event.preventDefault();
+
+            if (!window.supabase) {
+                alert("No se pudo cargar Supabase. Recarga la pagina e intenta otra vez.");
+                return;
+            }
+
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+
+            if (!email || !password) {
+                alert("Completa email y contrasena.");
+                return;
+            }
+
+            adminLoginButton.disabled = true;
+            adminLoginButton.textContent = "INGRESANDO...";
+
+            const clienteSupabase = window.supabase.createClient(
+                "https://zpyhryenaaiewbjzjmfg.supabase.co",
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpweWhyeWVuYWFpZXdianpqbWZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjgyNTIsImV4cCI6MjA5NjgwNDI1Mn0.hzHO4eRH7xH_O1zo6_lBs9kbsImBNLnDxL23okgK9_g"
+            );
+
+            const { error } = await clienteSupabase.auth.signInWithPassword({
+                email,
+                password
+            });
+
+            adminLoginButton.disabled = false;
+            adminLoginButton.textContent = "INGRESAR";
+
+            if (error) {
+                alert("No se pudo iniciar sesion: " + error.message);
+                return;
+            }
+
+            adminLoginForm.reset();
+            mostrarAdminPanel(true);
+        }
+
+        adminLoginForm.addEventListener('submit', loginAdminDirecto);
+        adminLoginButton.addEventListener('click', loginAdminDirecto);
+        window.__adminLoginInline = true;
+    </script>
+    <script src="admin.js?v=login-4"></script>
 </body>
 </html>

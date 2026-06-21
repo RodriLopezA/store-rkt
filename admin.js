@@ -64,8 +64,10 @@ async function ingresarAdmin(e) {
     mostrarPanelAutenticado(true);
 }
 
-formLogin?.addEventListener('submit', ingresarAdmin);
-btnLogin?.addEventListener('click', ingresarAdmin);
+if (!window.__adminLoginInline) {
+    formLogin?.addEventListener('submit', ingresarAdmin);
+    btnLogin?.addEventListener('click', ingresarAdmin);
+}
 
 btnLogout?.addEventListener('click', async () => {
     await supabase.auth.signOut();
