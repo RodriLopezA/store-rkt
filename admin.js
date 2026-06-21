@@ -1,11 +1,20 @@
 ﻿const SUPABASE_URL = "https://zpyhryenaaiewbjzjmfg.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpweWhyeWVuYWFpZXdianpqbWZnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMjgyNTIsImV4cCI6MjA5NjgwNDI1Mn0.hzHO4eRH7xH_O1zo6_lBs9kbsImBNLnDxL23okgK9_g";
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
 const formLogin = document.getElementById('form-login');
 const loginAdmin = document.getElementById('login-admin');
 const panelAdmin = document.getElementById('panel-admin');
 const btnLogout = document.getElementById('btn-logout');
+
+if (!window.supabase) {
+    formLogin?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert("No se pudo cargar Supabase. Revisa la conexion o recarga la pagina.");
+    });
+
+    throw new Error("Supabase JS no esta cargado.");
+}
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function mostrarPanelAutenticado(autenticado) {
     if (loginAdmin) loginAdmin.hidden = autenticado;
